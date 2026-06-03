@@ -24,7 +24,7 @@ architecture family Kimi-K2 belongs to; the literal Kimi-K2 (384-expert) shape w
 > delta that overlap would compress toward parity — it did not.
 >
 > **How it ran:** this cluster has **no kubeflow PyTorchJob CRD**, so the A/B ran as **raw
-> ranked Pods** via [`run-ab-rawpods.sh`](run-ab-rawpods.sh) driving
+> ranked Pods** via the shared launcher [`../run-ab-rawpods.sh`](../run-ab-rawpods.sh) driving
 > [`bench_dsv3_pretrain.py`](bench_dsv3_pretrain.py). The substrate is the recipe-native
 > **DSV3 256-expert** MoE, not Kimi-K2's 384 (overriding the expert count breaks the
 > recipe's node-group routing). Metric of record is **mean** steady-state iter time (not
@@ -57,13 +57,15 @@ delta is attributable to the dispatcher and not to a confounder.
 - Cluster: an EKS cluster with a `p6-b300.48xlarge` capacity-block node group, namespace
   `kimi-k2-bench` (override the context and namespace via `CTX` / `NS`). The validation
   cluster had **no kubeflow PyTorchJob CRD**, so runs launch as raw ranked Pods (see
-  `run-ab-rawpods.sh`).
+  the shared launcher `../run-ab-rawpods.sh`).
 
-Scripts in this directory:
+Files (the launcher, campaign driver, and parser are **shared at the library level**):
 
 | file | what it does |
 |------|--------------|
-| `run-ab-rawpods.sh` | **the launcher** — one arm per call (`./run-ab-rawpods.sh <alltoall\|deepep> [NNODES]`); creates raw ranked Pods + a headless Service + static torchrun rendezvous (no PyTorchJob CRD needed). Env knobs: `EXPERT_PARALLEL`, `MICRO_BATCH`, `GLOBAL_BATCH`, `TRAIN_ITERS`, `MOE_A2A_OVERLAP`, `MOE_FORCE_BALANCE`, `LOSS_PROBE` |
+| [`../run-ab-rawpods.sh`](../run-ab-rawpods.sh) | **the shared launcher** — one arm per call (`MODEL=dsv3 bash ../run-ab-rawpods.sh <alltoall\|deepep> [NNODES]`); creates raw ranked Pods + a headless Service + static torchrun rendezvous (no PyTorchJob CRD needed). Writes every run to a unique **no-overwrite** dir `/fsx/megatron-bridge-bench/<CAMPAIGN_ID>/dsv3/<arm>-mb<m>-ovl<on\|off>/` (per-node `logs/rank-<r>.log`, `env.txt`, `STATUS`; rank-0 refuses to clobber a completed run). Env knobs: `MODEL`, `CAMPAIGN_ID`, `EXPERT_PARALLEL`, `MICRO_BATCH`, `GLOBAL_BATCH`, `TRAIN_ITERS`, `MOE_A2A_OVERLAP`, `MOE_FORCE_BALANCE`, `LOSS_PROBE` |
+| [`../bench/run-campaign.sh`](../bench/run-campaign.sh) | **the campaign driver** — runs the full matrix (both models × {mb1,mb4} × {overlap on,off} × both arms) serially under one `CAMPAIGN_ID`, asserting the EFA-active gate per run |
+| [`../bench/parse-runs.py`](../bench/parse-runs.py) | post-hoc parser — per-run `loss_curve.csv` + campaign `index.csv` from the preserved rank logs (the per-iteration `lm loss` / iter-time line is printed by the **last** rank) |
 | `bench_dsv3_pretrain.py` | **the entrypoint** torchrun runs — builds the recipe's DSV3 256-expert config, applies the single dispatcher toggle + overlap/VPP/recompute handling, launches `pretrain()`. Staged to FSx at `/fsx/kimi-k2/bench_dsv3_pretrain.py` |
 | `RESULTS.md` | results sheet (sweep + overlap=on + work-equivalence + caveats) |
 
@@ -227,7 +229,7 @@ A strict swap of **only** the MoE token dispatcher (NCCL `alltoall` vs UCCL `dee
 run end-to-end through a real Megatron-Bridge training step on the full 256-GPU config.
 Everything else (model, data, parallelism, precision, image, EFA env, overlap mode) is
 held identical, so the iter-time delta is attributable to the dispatcher, not a
-confounder. `run-ab-rawpods.sh` launches one arm at a time (changing only
+confounder. `../run-ab-rawpods.sh` launches one arm at a time (changing only
 `MOE_DISPATCHER`); verify the nodes are Ready first:
 
 ```bash
@@ -238,43 +240,51 @@ kubectl --context "$CTX" get nodes -l node.kubernetes.io/instance-type=p6-b300.4
 
 ## How to run
 
-**Validated path — raw ranked Pods (`run-ab-rawpods.sh`).** One arm per invocation;
-each arm holds all 32 nodes, so delete the previous arm's Pods before the next. Stage
-`bench_dsv3_pretrain.py` to FSx first (`/fsx/kimi-k2/bench_dsv3_pretrain.py`).
+**Validated path — raw ranked Pods (shared launcher `../run-ab-rawpods.sh`).** One arm
+per invocation; each arm holds all 32 nodes, so delete the previous arm's Pods before
+the next. Stage `bench_dsv3_pretrain.py` to FSx first
+(`/fsx/kimi-k2/bench_dsv3_pretrain.py`). For the full two-model matrix in one shot, use
+[`../bench/run-campaign.sh`](../bench/run-campaign.sh) instead — it stages the scripts,
+shares one `CAMPAIGN_ID`, and gates each run on EFA-active.
 
 ```bash
 cd 3.test_cases/megatron/megatron-bridge/dsv3
-export CTX=<your-kubectl-context>          # required by run-ab-rawpods.sh
+export CTX=<your-kubectl-context>          # required by ../run-ab-rawpods.sh
 export IMG=<your-account>.dkr.ecr.<region>.amazonaws.com/megatron-bridge-uccl:nemo-26.04.01-uccl-0dc87eb
 
 # Headline A/B at the throughput-efficient operating point (mb=4, overlap off), 256 GPU.
 # Run deepep, wait for completion, delete its Pods, then run alltoall with the SAME knobs.
 EXPERT_PARALLEL=32 GLOBAL_BATCH=256 MICRO_BATCH=4 TRAIN_ITERS=20 \
-  MOE_A2A_OVERLAP=off bash run-ab-rawpods.sh deepep 32
+  MOE_A2A_OVERLAP=off MODEL=dsv3 bash ../run-ab-rawpods.sh deepep 32
 EXPERT_PARALLEL=32 GLOBAL_BATCH=256 MICRO_BATCH=4 TRAIN_ITERS=20 \
-  MOE_A2A_OVERLAP=off bash run-ab-rawpods.sh alltoall 32
+  MOE_A2A_OVERLAP=off MODEL=dsv3 bash ../run-ab-rawpods.sh alltoall 32
 
 # Deployment-realistic overlap=on (the bench auto-adds VPP=2 + recompute-off on both arms):
 EXPERT_PARALLEL=32 GLOBAL_BATCH=256 MICRO_BATCH=4 TRAIN_ITERS=20 \
-  MOE_A2A_OVERLAP=on  bash run-ab-rawpods.sh deepep 32      # then alltoall, same as above
+  MOE_A2A_OVERLAP=on  MODEL=dsv3 bash ../run-ab-rawpods.sh deepep 32      # then alltoall, same as above
 
 # Cheap pre-flight: 8-node smoke (EP capped at 8 on 8 nodes = 64 GPU, DP=1):
-EXPERT_PARALLEL=8 GLOBAL_BATCH=8 TRAIN_ITERS=8 MOE_A2A_OVERLAP=off bash run-ab-rawpods.sh deepep 8
+EXPERT_PARALLEL=8 GLOBAL_BATCH=8 TRAIN_ITERS=8 MOE_A2A_OVERLAP=off MODEL=dsv3 bash ../run-ab-rawpods.sh deepep 8
 ```
 
-Read each arm's rank-0 log from FSx (`/fsx/kimi-k2/bench/logs/abrun-<arm>-0.log`) via a
-reader pod (`kubectl exec`/`logs` stdout garbles at this scale); scrape
-`Step Time : <s>s ... MODEL_TFLOP/s/GPU`, drop the warmup iters, take the **mean**.
+Each run writes to a unique, never-overwritten directory
+`/fsx/megatron-bridge-bench/<CAMPAIGN_ID>/dsv3/<arm>-mb<m>-ovl<on|off>/` — per-node logs
+under `logs/rank-<r>.log` plus `env.txt` and `STATUS`. Pod stdout is redirected to those
+FSx files (`kubectl logs` shows nothing); read them via an FSx-mounted reader pod. Parse
+with [`../bench/parse-runs.py`](../bench/parse-runs.py): the per-iteration training line
+(`iteration N/M | elapsed time per iteration (ms) | lm loss | TFLOP/s/GPU`) is printed by
+the **last** rank, so both the steady-state mean (warmup dropped) and the per-iteration
+`lm loss` curve come from the highest-numbered rank log.
 
-Common env overrides for `run-ab-rawpods.sh`: `CTX` (required), `IMG` (required), `NS`,
-`EXPERT_PARALLEL`, `MICRO_BATCH`, `GLOBAL_BATCH`, `TRAIN_ITERS`, `SEQ_LEN`,
-`MOE_A2A_OVERLAP`, `MOE_FORCE_BALANCE`, `LOSS_PROBE`. Outputs go to `/fsx/kimi-k2/bench`
-(rank-0 logs under `logs/`).
+Common env overrides for `../run-ab-rawpods.sh`: `CTX` (required), `IMG` (required),
+`MODEL` (`dsv3`\|`kimi-k2`), `NS`, `CAMPAIGN_ID`, `STAGE`, `EXPERT_PARALLEL`,
+`MICRO_BATCH`, `GLOBAL_BATCH`, `TRAIN_ITERS`, `SEQ_LEN`, `MOE_A2A_OVERLAP`,
+`MOE_FORCE_BALANCE`, `LOSS_PROBE`.
 
 ### Capacity-block scheduling contract
 
 The capacity-block managed node group carries taints `nvidia.com/gpu`,
-`workload=bench`, and `capacity-reservation` (plus matching labels). `run-ab-rawpods.sh`
+`workload=bench`, and `capacity-reservation` (plus matching labels). `../run-ab-rawpods.sh`
 sets the matching `nodeSelector` + `tolerations` and requests `vpc.amazonaws.com/efa: 16`
 per node on every Pod it creates.
 

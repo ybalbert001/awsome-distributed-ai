@@ -256,12 +256,16 @@ all-to-all at EP=32), not merely exposed comm latency that overlap could hide.
 
 ## How to reproduce
 
-Run the A/B on a 32-node (256-GPU) p6-b300 block with `run-ab-rawpods.sh` (see
-[`README.md`](README.md) for the exact commands). One arm per call; delete the arm's
-Pods between runs. Drop the warmup iters and take the **mean** of `Step Time` and
-`MODEL_TFLOP/s/GPU` over the steady-state iters; derive tokens/s as
+Run the A/B on a 32-node (256-GPU) p6-b300 block with the shared launcher
+`../run-ab-rawpods.sh` (`MODEL=dsv3`; see [`README.md`](README.md) for the exact
+commands), or run the full two-model matrix with `../bench/run-campaign.sh`. One arm
+per call; delete the arm's Pods between runs. Every run writes to a unique,
+never-overwritten dir under `/fsx/megatron-bridge-bench/<CAMPAIGN_ID>/`. Parse with
+`../bench/parse-runs.py`: it drops the warmup iters, takes the **mean** over the
+steady state, and extracts the per-iteration `lm loss` curve — the training line is
+printed by the **last** rank's log. Tokens/s is derived as
 `global_batch × seq_len / iter_time_s` (it is not a printed Megatron label). For the
-deployment-realistic number set `MOE_A2A_OVERLAP=on` (the launcher auto-adds VPP=2 +
+deployment-realistic number set `MOE_A2A_OVERLAP=on` (the bench auto-adds VPP=2 +
 recompute-off); for the dispatcher-isolation number set `MOE_A2A_OVERLAP=off`.
 
 **Confounder guard:** assert `NET/OFI Selected provider is efa` appears in the logs
