@@ -30,7 +30,7 @@ If the [envsubst](https://github.com/a8m/envsubst) utility is not available in y
 All commands in this README are run from the `kubernetes/` directory:
 
 ```bash
-cd examples/pytorch/nvrx/kubernetes
+cd examples/training/nvrx/kubernetes
 ```
 
 ## 1. Create Namespace

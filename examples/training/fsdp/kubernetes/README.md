@@ -28,7 +28,7 @@ Clone this repo.
 
 ```
 git clone https://github.com/awslabs/awsome-distributed-training/
-cd awsome-distributed-training/examples/pytorch/FSDP/kubernetes
+cd awsome-distributed-training/examples/training/fsdp/kubernetes
 ```
 
 ### 0.4. Envsubst

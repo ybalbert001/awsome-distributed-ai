@@ -4,7 +4,7 @@ This walkthrough demonstrates how to set up and run large language model (LLM) k
 
 ## Repository Structure
 ```
-examples/pytorch/distillation/
+examples/use-cases/llm-distillation/
 ├── Dockerfile                 # Container definition for running distillation workloads
 ├── kubernetes/
 │   └── distill.yaml          # Kubernetes configuration for distributed training
@@ -26,7 +26,7 @@ First, prepare your container image with all necessary dependencies:
 # Clone the repository
 cd ~
 git clone https://github.com/awslabs/awsome-distributed-training/
-cd awsome-distributed-training/examples/pytorch/distillation
+cd awsome-distributed-training/examples/use-cases/llm-distillation
 
 # Set up environment variables
 aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin public.ecr.aws/hpc-cloud

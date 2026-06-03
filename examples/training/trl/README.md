@@ -9,7 +9,7 @@ All test cases share a common base Docker image defined in [`Dockerfile`](Docker
 Build the shared base image:
 
 ```bash
-cd examples/pytorch/trl
+cd examples/training/trl
 docker build -t trl-base:latest .
 ```
 

@@ -32,7 +32,7 @@ ssh ubuntu@<head-node-ip>
 # Clone the repo to shared storage
 cd /fsx
 git clone https://github.com/awslabs/awsome-distributed-training.git
-cd awsome-distributed-training/examples/pytorch/deepspeed/qlora
+cd awsome-distributed-training/examples/training/deepspeed/qlora
 
 # Install the venv package (not pre-installed on HyperPod AMI)
 sudo apt-get update && sudo apt-get install -y python3.10-venv
@@ -77,7 +77,7 @@ mv qwen3-qlora+latest.sqsh /fsx/containers/qwen3-qlora.sqsh
 ### ZeRO-2 (Default)
 
 ```bash
-cd /fsx/awsome-distributed-training/examples/pytorch/deepspeed/qlora/slurm
+cd /fsx/awsome-distributed-training/examples/training/deepspeed/qlora/slurm
 
 # Activate venv (skip if using container mode)
 source /fsx/venvs/qwen3-qlora/bin/activate

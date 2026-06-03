@@ -54,7 +54,7 @@ Several utility scripts (`generate_synthetic_dataset.py`, `nsys_wrapper.sh`, `pr
 
 ```bash
 git clone https://github.com/awslabs/awsome-distributed-training.git
-cd awsome-distributed-training/examples/pytorch/vjepa2.1
+cd awsome-distributed-training/examples/use-cases/vjepa2.1
 ```
 
 ## 2. Datasets

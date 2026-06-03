@@ -53,27 +53,32 @@ You will also find [documentation](./architectures/efa-cheatsheet.md) for EFA an
 
 Custom machine images can be built using [Packer](https://www.packer.io) for AWS ParallelCluster, Amazon EKS and plain EC2. These images are based on Ansible roles and playbooks.
 
-## 3. Test Cases
+## 3. Examples
 
-Test cases are organized under `examples/` by framework (e.g. `pytorch/`, `megatron/`, `jax/`). Within each framework, directories are named after the training library or method (e.g. `picotron/`, `FSDP/`, `megatron-lm/`).
+Examples live under `examples/` and are organized along two axes:
 
-Each test case follows this general structure:
+- **`examples/training/`** and **`examples/inference/`** — *framework-centric*. The training or inference engine is the subject, and model variants underneath illustrate it (e.g. `training/fsdp/`, `training/megatron-lm/`, `training/nemo/`). Swapping the model gives "the same example with a different model."
+- **`examples/use-cases/`** — *use-case-centric*. A specific model or task is the subject and the framework is incidental (e.g. `use-cases/detr-finetune/`, `use-cases/vjepa2/`). Swapping the framework would still leave a recognizable demo.
+
+Each example follows this general structure:
 
 ```
 examples/
-└── <framework>/                # e.g. pytorch, megatron, jax
-    └── <library>/              # e.g. picotron, FSDP, megatron-lm
-        └── <model>/            # e.g. SmolLM-1.7B (may be omitted for single-model cases)
-            ├── Dockerfile      # Container / environment setup
-            ├── README.md
-            ├── slurm/          # Slurm-specific launch scripts
-            ├── kubernetes/     # Kubernetes manifests
-            └── hyperpod-eks/   # HyperPod EKS instructions
+├── training/                   # framework-centric training/fine-tuning engines
+│   └── <framework>/            # e.g. fsdp, deepspeed, megatron-lm, nemo, trl
+│       └── <model>/            # e.g. llama3 (may be omitted for single-model cases)
+│           ├── Dockerfile      # Container / environment setup
+│           ├── README.md
+│           ├── slurm/          # Slurm-specific launch scripts
+│           └── kubernetes/     # Kubernetes manifests
+├── inference/                  # framework-centric inference engines (placeholder)
+└── use-cases/                  # use-case-centric end-to-end demos
+    └── <name>/                 # e.g. detr-finetune, esm2-hyperpod
 ```
 
-The top-level directory for each test case contains general introduction and environment setup (Dockerfiles, training scripts, configs), while subdirectories provide service-specific launch instructions.
+The top-level directory for each example contains general introduction and environment setup (Dockerfiles, training scripts, configs), while subdirectories provide service-specific launch instructions.
 
-Browse [`examples/`](./examples) to see the full list of available frameworks and test cases.
+Browse [`examples/`](./examples) to see the full list of frameworks, engines, and use cases.
 
 ## 4. Validation and Observability
 

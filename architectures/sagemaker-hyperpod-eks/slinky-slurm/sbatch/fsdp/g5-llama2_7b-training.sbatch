@@ -87,7 +87,7 @@ declare -a TORCHRUN_ARGS=(
 )
 
 export PATH="/usr/local/bin:$PATH"
-export TRAIN_SCRIPT="/fsx/awsome-distributed-training/examples/pytorch/FSDP/src/train.py"
+export TRAIN_SCRIPT="/fsx/awsome-distributed-training/examples/training/fsdp/src/train.py"
 export PYTHONPATH="/usr/local/lib/python3.12/site-packages:$PYTHONPATH"
 export TORCHRUN="/usr/local/bin/python3 -m torch.distributed.run"
 

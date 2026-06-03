@@ -12,7 +12,7 @@ On your cluster head node,
 ```bash
 cd /fsx
 git clone https://github.com/awslabs/awsome-distributed-training/
-cd awsome-distributed-training/examples/pytorch/FSDP/slurm
+cd awsome-distributed-training/examples/training/fsdp/slurm
 ```
 
 3. You can launch the training through:

@@ -332,7 +332,7 @@ vim --version
 
 cd /fsx
 git clone https://github.com/awslabs/awsome-distributed-training/
-cd awsome-distributed-training/examples/pytorch/FSDP/slurm
+cd awsome-distributed-training/examples/training/fsdp/slurm
 
 mkdir -p checkpoints
 ```
@@ -377,7 +377,7 @@ Watch the error logs from `slurm-worker-slinky-0`:
 # from a new terminal window
 kubectl -n slurm exec -it pod/slurm-worker-slinky-0 -- bash --login
 
-cd /fsx/awsome-distributed-training/examples/pytorch/FSDP/slurm
+cd /fsx/awsome-distributed-training/examples/training/fsdp/slurm
 export JOB_ID=$(squeue -h -u root -o "%i" | head -1)
 
 watch "grep 'Batch.*Loss' logs/llama2_7b-FSDP_${JOB_ID}.err"
@@ -403,7 +403,7 @@ Watch checkpoints from `slurm-worker-slinky-2`:
 # from a new terminal window
 kubectl -n slurm exec -it pod/slurm-worker-slinky-2 -- bash --login
 
-cd /fsx/awsome-distributed-training/examples/pytorch/FSDP/slurm
+cd /fsx/awsome-distributed-training/examples/training/fsdp/slurm
 
 # highlight changes, show timestamps, 5 second updates
 watch -n 5 -d "ls -lh checkpoints"

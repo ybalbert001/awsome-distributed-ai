@@ -77,7 +77,7 @@ Each example is a JSONL line:
 
 The dataset is expected at `/fsx/goldilocks/train.jsonl` and `/fsx/goldilocks/test.jsonl` (mounted via FSx). To generate your own:
 
-1. See the sibling generator: `examples/megatron/nemo-rl/data-prep/generate_goldilocks_data_designer.py`
+1. See the sibling generator: `examples/training/nemo-rl/data-prep/generate_goldilocks_data_designer.py`
 2. Or use any math problem dataset with `prompt` and `answer` fields in JSONL format.
 
 The `kubernetes/rayjob-grpo.yaml` manifest mounts `/fsx/goldilocks/` — update the `goldilocksPath` env var in the manifest if your path differs.

@@ -31,7 +31,7 @@ The example was tested on versions:
 ### Clone this repo
 ```bash
 git clone https://github.com/awslabs/awsome-distributed-training.git 
-cd awsome-distributed-training/examples/pytorch/verl/hyperpod-eks/rlvr
+cd awsome-distributed-training/examples/training/verl/hyperpod-eks/rlvr
 ```
 
 ### Install verl repository

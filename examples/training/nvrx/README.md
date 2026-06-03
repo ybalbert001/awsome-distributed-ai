@@ -50,7 +50,7 @@ To run these tests, you need a training cluster with GPU nodes and shared storag
 From the `nvrx/` directory, build a container image with PyTorch 2.9, NVRx 0.4.1, and the training scripts:
 
 ```bash
-cd examples/pytorch/nvrx
+cd examples/training/nvrx
 
 export AWS_REGION=$(aws ec2 describe-availability-zones --output text --query 'AvailabilityZones[0].[RegionName]')
 export ACCOUNT=$(aws sts get-caller-identity --query Account --output text)
