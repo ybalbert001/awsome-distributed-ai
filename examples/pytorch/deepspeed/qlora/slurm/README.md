@@ -7,7 +7,7 @@ For the EKS/Kubernetes deployment path, see the [top-level README](../README.md)
 ## Prerequisites
 
 1. **SageMaker HyperPod cluster** with GPU worker nodes provisioned and running.
-   See [`1.architectures/5.sagemaker-hyperpod/`](https://github.com/awslabs/awsome-distributed-training/tree/main/1.architectures/5.sagemaker-hyperpod) for cluster setup.
+   See [`architectures/sagemaker-hyperpod-slurm/`](https://github.com/awslabs/awsome-distributed-training/tree/main/architectures/sagemaker-hyperpod-slurm) for cluster setup.
 
 2. **Shared filesystem** — HyperPod clusters use Amazon FSx for Lustre mounted at `/fsx`.
 
@@ -32,7 +32,7 @@ ssh ubuntu@<head-node-ip>
 # Clone the repo to shared storage
 cd /fsx
 git clone https://github.com/awslabs/awsome-distributed-training.git
-cd awsome-distributed-training/3.test_cases/pytorch/deepspeed/qlora
+cd awsome-distributed-training/examples/pytorch/deepspeed/qlora
 
 # Install the venv package (not pre-installed on HyperPod AMI)
 sudo apt-get update && sudo apt-get install -y python3.10-venv
@@ -77,7 +77,7 @@ mv qwen3-qlora+latest.sqsh /fsx/containers/qwen3-qlora.sqsh
 ### ZeRO-2 (Default)
 
 ```bash
-cd /fsx/awsome-distributed-training/3.test_cases/pytorch/deepspeed/qlora/slurm
+cd /fsx/awsome-distributed-training/examples/pytorch/deepspeed/qlora/slurm
 
 # Activate venv (skip if using container mode)
 source /fsx/venvs/qwen3-qlora/bin/activate

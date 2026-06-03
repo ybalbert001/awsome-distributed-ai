@@ -15,7 +15,7 @@ To deploy the architectures you must install the dependencies below. You are adv
 
 The following digram shows a common architecture that can be used for distributed model training on EKS.
 
-<img align="center" src="../../0.docs/eks-model-training-single-az.png" width="60%" />
+<img align="center" src="../../docs/eks-model-training-single-az.png" width="60%" />
 
 The EKS cluster has two nodegroups. A `system` nodegroup is used to run pods like kube-dns, kubeflow training operator, etc. which provide internal cluster-scope services and can run on CPU. A worker nodegroup built with an accelerated instance type is used to run the distributed training workload. 
 

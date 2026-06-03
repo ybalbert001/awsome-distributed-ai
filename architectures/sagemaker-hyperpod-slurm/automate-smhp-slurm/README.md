@@ -7,7 +7,7 @@ It handles the installation and configuration of necessary tools, clones the req
 
 ## Demo
 
-![SageMaker Hyperpod Cluster Automation Demo](/1.architectures/5.sagemaker-hyperpod/automate-smhp-slurm/media/automate-smhp-demo.gif)
+![SageMaker Hyperpod Cluster Automation Demo](/architectures/sagemaker-hyperpod-slurm/automate-smhp-slurm/media/automate-smhp-demo.gif)
 
 This demo gif showcases the step-by-step process of creating and setting up a SageMaker Hyperpod cluster using our automation script.
 
@@ -28,7 +28,7 @@ This demo gif showcases the step-by-step process of creating and setting up a Sa
 1. Clone this repository:
    ```bash
    git clone https://github.com/awslabs/awsome-distributed-training.git
-   cd 1.architectures/5.sagemaker-hyperpod/automate-smhp-slurm
+   cd architectures/sagemaker-hyperpod-slurm/automate-smhp-slurm
    ```
 
 2. Make the script executable:

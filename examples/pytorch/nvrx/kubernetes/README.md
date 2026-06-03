@@ -6,7 +6,7 @@ This guide walks you through deploying NVRx resiliency experiments on an Amazon 
 
 ### 0.1. EKS Cluster
 
-You need an Amazon EKS cluster with GPU nodes and EFA networking. Instructions for creating a cluster can be found in [1.architectures](../../../../1.architectures), the [aws-do-eks](https://bit.ly/do-eks) project, or [EKS Blueprints](https://github.com/aws-ia/terraform-aws-eks-blueprints).
+You need an Amazon EKS cluster with GPU nodes and EFA networking. Instructions for creating a cluster can be found in [architectures](../../../../architectures), the [aws-do-eks](https://bit.ly/do-eks) project, or [EKS Blueprints](https://github.com/aws-ia/terraform-aws-eks-blueprints).
 
 Your cluster must have:
 - GPU nodes (g5, p4de, or p5 instances) with [NVIDIA device plugin](https://github.com/NVIDIA/k8s-device-plugin)
@@ -30,7 +30,7 @@ If the [envsubst](https://github.com/a8m/envsubst) utility is not available in y
 All commands in this README are run from the `kubernetes/` directory:
 
 ```bash
-cd 3.test_cases/pytorch/nvrx/kubernetes
+cd examples/pytorch/nvrx/kubernetes
 ```
 
 ## 1. Create Namespace

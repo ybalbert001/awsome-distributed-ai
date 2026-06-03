@@ -95,7 +95,7 @@ For more details, see the [OpenEnv documentation](https://meta-pytorch.org/OpenE
 
 ## Prerequisites
 
-1. **SageMaker HyperPod EKS cluster** with GPU worker groups (e.g. `ml.g6.12xlarge` or `ml.g6e.12xlarge`). See [`1.architectures/7.sagemaker-hyperpod-eks/`](../../../../1.architectures/7.sagemaker-hyperpod-eks/) for cluster setup instructions.
+1. **SageMaker HyperPod EKS cluster** with GPU worker groups (e.g. `ml.g6.12xlarge` or `ml.g6e.12xlarge`). See [`architectures/sagemaker-hyperpod-eks/`](../../../../architectures/sagemaker-hyperpod-eks/) for cluster setup instructions.
 
 2. **HyperPod Helm chart** (`hyperpod-dependencies`) installed in the `kube-system` namespace. This bundles the NVIDIA device plugin, health monitoring agents, and other HyperPod components:
    ```bash
@@ -146,7 +146,7 @@ hyperpod-i-0f9e8d7c6b5a43210   Ready    <none>   2d    v1.33.5-eks-ecaa3a6   Sch
 
 ```bash
 git clone https://github.com/awslabs/awsome-distributed-training/
-cd awsome-distributed-training/3.test_cases/pytorch/trl/openenv-wordle-grpo
+cd awsome-distributed-training/examples/pytorch/trl/openenv-wordle-grpo
 ```
 
 ## 1. Build Container Image

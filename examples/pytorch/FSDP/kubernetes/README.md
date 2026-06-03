@@ -7,7 +7,7 @@ This document will run you through how to run Llama 3.1 8B model training with F
 ## 0. Prerequisites
 
 ### 0.1. EKS Cluster
-Before running this training, you'll need to create an Amazon EKS or a SageMaker HyperPod EKS cluster. Instructions can be found in [1.architectures](../../1.architectures), the [aws-do-eks](https://bit.ly/do-eks) project, or the [eks-blueprints](https://github.com/aws-ia/terraform-aws-eks-blueprints) project.
+Before running this training, you'll need to create an Amazon EKS or a SageMaker HyperPod EKS cluster. Instructions can be found in [architectures](../../architectures), the [aws-do-eks](https://bit.ly/do-eks) project, or the [eks-blueprints](https://github.com/aws-ia/terraform-aws-eks-blueprints) project.
 
 ### 0.2. Connect to your EKS Cluster
 
@@ -28,7 +28,7 @@ Clone this repo.
 
 ```
 git clone https://github.com/awslabs/awsome-distributed-training/
-cd awsome-distributed-training/3.test_cases/pytorch/FSDP/kubernetes
+cd awsome-distributed-training/examples/pytorch/FSDP/kubernetes
 ```
 
 ### 0.4. Envsubst

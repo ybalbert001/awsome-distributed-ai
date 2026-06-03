@@ -16,7 +16,7 @@ This guide assumes that you have the following:
 - Enroot requires libmd to compile and squashfs-tools to execute.
 - A shared directory mounted on `/apps`
 
-It is recommended that you use the templates in the architectures [directory](../../1.architectures) to deploy Slurm (for example AWS ParallelCluster).
+It is recommended that you use the templates in the architectures [directory](../../architectures) to deploy Slurm (for example AWS ParallelCluster).
 
 
 ## 1. Build the container and the squash file

@@ -10,7 +10,7 @@ SageMaker HyperPod clusters provide the ability to create customized clusters, t
 
 The example that follows describes the process of setting up a SageMaker HyperPod cluster with an attached FSX for Lustre volume.
 
-**Note: For a guided set-up experience, check out the [HyperPod automation script](https://github.com/awslabs/awsome-distributed-training/tree/main/1.architectures/5.sagemaker-hyperpod/automate-smhp-slurm/README.md).**
+**Note: For a guided set-up experience, check out the [HyperPod automation script](https://github.com/awslabs/awsome-distributed-training/tree/main/architectures/sagemaker-hyperpod-slurm/automate-smhp-slurm/README.md).**
 
 
 ## 2. Prerequisites
@@ -65,7 +65,7 @@ Now we can create a VPC. This is only necessary if you want to attach your Hyper
 
 You can create a VPC using the configuration in [2.SageMakerVPC.yaml](./2.SageMakerVPC.yaml). Which is also available via [<kbd> <br> 1-Click Deploy 🚀 <br> </kbd>](https://us-west-2.console.aws.amazon.com/cloudformation/home?region=us-west-2#/stacks/quickcreate?templateURL=https://awsome-distributed-training.s3.amazonaws.com/templates/Vpc.yaml&stackName=SageMakerVPC)
 
-<img src="../../0.docs/vpc-template.png" width="800">
+<img src="../../docs/vpc-template.png" width="800">
 
 Feel free to change the stack and VPC names. Make sure to select an availability zone that supports your preferred instance type ([Find an Amazon EC2 instance type](https://docs.aws.amazon.com/AWSEC2/latest/UserGuide/instance-discovery.html)). Leave both S3 and DynamoDB endpoints set to True. You can leave the IAM role blank.
 
@@ -77,7 +77,7 @@ FSx for Lustre provides a shared high performance file system that's accessible 
 
 Similar to the VPC we just created, you can create an FSx for Lustre volume using [3.FSxLustre.yaml](./3.FSxLustre.yaml), or by using [<kbd> <br> 1-Click Deploy 🚀 <br> </kbd>](https://us-west-2.console.aws.amazon.com/cloudformation/home?region=us-west-2#/stacks/quickcreate?templateURL=https://awsome-distributed-training.s3.amazonaws.com/templates/FSxLustre.yaml&stackName=FSxLustre)
 
-<img src="../../0.docs/fsx-lustre-template.png" width="800">
+<img src="../../docs/fsx-lustre-template.png" width="800">
 
 Change the stack name, capacity, throughput, and compression configurations as you wish. Select the latest Lustre version (2.15 by default). Under Network Options, select the Security Group ID and Private Subnet ID you created using the VPC CloudFormation stack in the previous step. Once again, you can leave the IAM role blank.
 
@@ -237,7 +237,7 @@ aws ec2 describe-security-groups \
 
 ### 3.3 Launch a new cluster
 
-Now that everything is in place, we can launch our cluster with the command from the `5.sagemaker-hyperpod` directory.
+Now that everything is in place, we can launch our cluster with the command from the `sagemaker-hyperpod-slurm` directory.
 
 ```
 aws sagemaker create-cluster \
@@ -356,7 +356,7 @@ You can also run validation on the scripts you wish to run. This ensures you’r
 
 ```
 # Run a check on a specific sbatch script that launches training
-python3 hyperpod-precheck.py -f ../../3.test_cases/1.megatron-lm/2.distributed-training.sbatch
+python3 hyperpod-precheck.py -f ../../examples/1.megatron-lm/2.distributed-training.sbatch
 ```
 
 

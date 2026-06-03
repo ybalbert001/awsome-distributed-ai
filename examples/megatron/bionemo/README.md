@@ -60,7 +60,7 @@ export DATASET_PATH=/fsx/
 ```bash
 cd /apps/
 git clone https://github.com/awslabs/awsome-distributed-training.git
-cp -r /apps/awsome-distributed-training/3.test_cases/14.bionemo/* ./apps/
+cp -r /apps/awsome-distributed-training/examples/14.bionemo/* ./apps/
 ```
 
 ## 2. Pull Image
@@ -93,7 +93,7 @@ All package versions in the above `requirements.txt` file is recommended from Nv
 
 ## 4. Build customized docker image
 To achieve target performance of Nemo-Multimodal with EFA on P5 and P4de instances, we provide a customized 
-`3.test_cases/14.nemo-multimodal/0.Dockerfile` and we can build a image like below:
+`examples/14.nemo-multimodal/0.Dockerfile` and we can build a image like below:
 
 ```
 docker build -t ${DOCKER_IMAGE_NAME}:${TAG} -f 0.Dockerfile .

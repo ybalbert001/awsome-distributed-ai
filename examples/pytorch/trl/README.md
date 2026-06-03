@@ -9,7 +9,7 @@ All test cases share a common base Docker image defined in [`Dockerfile`](Docker
 Build the shared base image:
 
 ```bash
-cd 3.test_cases/pytorch/trl
+cd examples/pytorch/trl
 docker build -t trl-base:latest .
 ```
 
@@ -22,7 +22,7 @@ docker build -t trl-base:latest .
 
 ## Prerequisites
 
-- GPU cluster with EFA networking (see [`1.architectures/`](../../../1.architectures/) for cluster setup)
+- GPU cluster with EFA networking (see [`architectures/`](../../../architectures/) for cluster setup)
 - Shared filesystem (e.g., Amazon FSx for Lustre) accessible from all nodes
 - [Enroot](https://github.com/NVIDIA/enroot) and [Pyxis](https://github.com/NVIDIA/pyxis) for Slurm container execution
 - Hugging Face model access tokens configured via `HF_HOME`

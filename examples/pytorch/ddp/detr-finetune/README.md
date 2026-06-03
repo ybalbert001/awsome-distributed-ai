@@ -45,7 +45,7 @@ across multiple GPU nodes connected with EFA networking.
 
 - An Amazon SageMaker HyperPod EKS cluster or Amazon EKS cluster with GPU nodes
   (e.g., `ml.g5.8xlarge`), accessible via `kubectl`. We recommend setting up the
-  cluster using the templates in [1.architectures](../../../../1.architectures).
+  cluster using the templates in [architectures](../../../../architectures).
 - An Amazon FSx for Lustre persistent volume claim (default name: `fsx-pvc`; see
   [kubernetes/README.md](kubernetes/README.md) if your cluster uses a different
   PVC name).

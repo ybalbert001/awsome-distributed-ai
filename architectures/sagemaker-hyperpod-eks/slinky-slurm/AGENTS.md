@@ -74,7 +74,7 @@ The repo root has `.markdownlint.jsonc` with these rules:
 
 ```bash
 # From repo root
-npx markdownlint-cli2 "1.architectures/7.sagemaker-hyperpod-eks/slinky-slurm/**/*.md"
+npx markdownlint-cli2 "architectures/sagemaker-hyperpod-eks/slinky-slurm/**/*.md"
 ```
 
 ### CI Static Analysis (PR workflow)

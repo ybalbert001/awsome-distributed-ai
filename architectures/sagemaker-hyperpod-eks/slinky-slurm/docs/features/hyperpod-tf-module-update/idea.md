@@ -16,7 +16,7 @@ The Terraform deployment option (`g5/g5-custom.tfvars` and `p5/p5-custom.tfvars`
 uses outdated syntax that is incompatible with the latest SageMaker HyperPod EKS
 Terraform modules. The tfvars files need to be updated to match the current module
 interface located at
-`1.architectures/7.sagemaker-hyperpod-eks/terraform-modules/hyperpod-eks-tf/custom.tfvars`.
+`architectures/sagemaker-hyperpod-eks/terraform-modules/hyperpod-eks-tf/custom.tfvars`.
 
 ## Proposed Solution
 
@@ -75,7 +75,7 @@ create_new_fsx_filesystem                 = true
 ### Key References
 
 - **New module tfvars:**
-  `1.architectures/7.sagemaker-hyperpod-eks/terraform-modules/hyperpod-eks-tf/custom.tfvars`
+  `architectures/sagemaker-hyperpod-eks/terraform-modules/hyperpod-eks-tf/custom.tfvars`
 - **Existing files to update:**
   `g5/g5-custom.tfvars`, `p5/p5-custom.tfvars`
 

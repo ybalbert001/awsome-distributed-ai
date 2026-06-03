@@ -11,7 +11,7 @@ The diagram below depicts the Terraform modules that have been bundled into a si
 Clone the AWSome Distributed Training repository and navigate to the terraform-modules directory:
 ```bash
 git clone https://github.com/awslabs/awsome-distributed-training.git
-cd awsome-distributed-training/1.architectures/7.sagemaker-hyperpod-eks/terraform-modules/hyperpod-eks-tf
+cd awsome-distributed-training/architectures/sagemaker-hyperpod-eks/terraform-modules/hyperpod-eks-tf
 ```
 
 ---
@@ -274,7 +274,7 @@ For air-gapped or closed network environments without internet access:
 
 ```bash
 # Navigate to the terraform modules directory
-cd awsome-distributed-training/1.architectures/7.sagemaker-hyperpod-eks/terraform-modules/hyperpod-eks-tf
+cd awsome-distributed-training/architectures/sagemaker-hyperpod-eks/terraform-modules/hyperpod-eks-tf
 
 # 1. Set your AWS account and region
 export AWS_ACCOUNT_ID=$(aws sts get-caller-identity --query Account --output text)
@@ -472,7 +472,7 @@ Once prerequisites are complete and your Helm chart is prepared:
 
 ```bash
 # Navigate to terraform directory
-cd awsome-distributed-training/1.architectures/7.sagemaker-hyperpod-eks/terraform-modules/hyperpod-eks-tf
+cd awsome-distributed-training/architectures/sagemaker-hyperpod-eks/terraform-modules/hyperpod-eks-tf
 
 # Initialize Terraform
 terraform init

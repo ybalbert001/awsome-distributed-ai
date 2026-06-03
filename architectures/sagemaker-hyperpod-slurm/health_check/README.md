@@ -58,7 +58,7 @@ Place the orchestrator and your health check script on shared storage:
 ```
 cd /fsx/ubuntu
 git clone https://github.com/awslabs/awsome-distributed-training.git
-cd awsome-distributed-training/1.architectures/5.sagemaker-hyperpod/health_check
+cd awsome-distributed-training/architectures/sagemaker-hyperpod-slurm/health_check
 chmod +x health_check_orchestrator.sh dcgm.sh prolog_dcgm.sh
 cp health_check_orchestrator.sh dcgm.sh prolog_dcgm.sh /fsx/ubuntu/
 ```

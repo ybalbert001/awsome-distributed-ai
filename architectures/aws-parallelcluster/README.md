@@ -9,7 +9,7 @@ This README provides a "vanilla" reference architectures and deployment guide fo
 
 ## Architecture
 
-![AWS ParallelCluster diagram](../../0.docs/core-infra-architecture.png)
+![AWS ParallelCluster diagram](../../docs/core-infra-architecture.png)
 
 The infrastructure consists of the two layers:
 
@@ -56,7 +56,7 @@ First, clone the repository and move to this directory:
 
 ```bash
 git clone https://github.com/awslabs/awsome-distributed-training.git
-cd awsome-distributed-training/1.architectures/2.aws-parallelcluster
+cd awsome-distributed-training/architectures/aws-parallelcluster
 ```
 
 Then create a directory under home directory to store cluster config files:
@@ -232,7 +232,7 @@ Please follow the steps below to deploy your resources:
 > The above CloudFormation stack uses FSx for Lustre `PERSISTENT_2` deployment type by default. If your selected availability zone doesn't support `PERSISTENT_2` or you specifically need to use `PERSISTENT_1` deployment type, please use the link below instead:
 > [<kbd> <br> 1-Click Deploy 🚀 <br> </kbd>](https://console.aws.amazon.com/cloudformation/home#/stacks/quickcreate?templateUrl=https://awsome-distributed-training.s3.amazonaws.com/templates/parallelcluster-prerequisites-p1.yaml&stackName=parallelcluster-prerequisites)
 
-![parallelcluster-prerequisites-cfn](../../0.docs/parallelcluster-prerequisites-cfn.png)
+![parallelcluster-prerequisites-cfn](../../docs/parallelcluster-prerequisites-cfn.png)
 
 2. Once the CloudFormation stack deployment is complete, you'll need to export the stack name as an environment variable for future steps:
 
@@ -453,7 +453,7 @@ Once the cluster goes into **CREATE COMPLETE**, we can connect to the head node 
 **SSH** can be used to connect to the cluster from a standard SSH client. This can be configured to use your own key via adding the public key or a new key can be provisioned.
 
 ### SSM Connect
-![ssm connect](../../0.docs/ssm-connect.png)
+![ssm connect](../../docs/ssm-connect.png)
 You'll need to be authenticated to the AWS account that instance is running in and have permission to launch a SSM session . Once you're connected you'll have access to a terminal on the head node:
 
 Now change to `ubuntu` user:
@@ -462,7 +462,7 @@ Now change to `ubuntu` user:
 sudo su - ubuntu
 ```
 
-![ssm user connect](../../0.docs/ssm-connect-user.png)
+![ssm user connect](../../docs/ssm-connect-user.png)
 
 ### SSH access
 

@@ -8,7 +8,7 @@
 
 ```bash
 git clone https://github.com/awslabs/awsome-distributed-training.git
-cd awsome-distributed-training/1.architectures/3.aws-batch
+cd awsome-distributed-training/architectures/aws-batch
 aws cloudformation create-stack --stack-name aws-batch-p5 \
                                 --template-body file://0.aws-batch-distributed-training-p5.yaml \
                                 --parameters ParameterKey=VPCStackParameter,ParameterValue="aws-batch-vpc" \

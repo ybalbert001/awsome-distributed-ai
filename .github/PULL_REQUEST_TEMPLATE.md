@@ -31,7 +31,7 @@
 <!-- If adding or updating a test case, ensure it follows the expected layout below. -->
 
 ```
-3.test_cases/
+examples/
 └── <framework>/                # e.g. pytorch, megatron, jax
     └── <library>/              # e.g. picotron, FSDP, megatron-lm
         └── <model>/            # e.g. SmolLM-1.7B (may be omitted for single-model cases)

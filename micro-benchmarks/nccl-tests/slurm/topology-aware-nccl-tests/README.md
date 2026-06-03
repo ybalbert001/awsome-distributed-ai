@@ -19,7 +19,7 @@ If you are using Slurm, this guide assumes that you have the following:
 - Enroot requires libmd to compile and squashfs-tools to execute.
 - A shared directory mounted on `/fsxl`
 
-It is recommended that you use the templates in the architectures [directory](../../../../1.architectures)
+It is recommended that you use the templates in the architectures [directory](../../../../architectures)
 
 ## 1. Prepare the container image and other artifacts
 

@@ -5,14 +5,14 @@ This repository contains reference architectures and test cases for distributed 
 The major components of this directory are:
 
 ```
-├── 1.architectures/               # CloudFormation templates for reference architectures
-├── 2.ami_and_containers/          # Scripts to create AMIs and container images
-├── 3.test_cases/                  # Reference test cases and/or benchmark scripts
-├── 4.validation_and_observability/# Tools to measure performance or troubleshoot
+├── architectures/               # CloudFormation templates for reference architectures
+├── ami_and_containers/          # Scripts to create AMIs and container images
+├── examples/                  # Reference test cases and/or benchmark scripts
+├── validation_and_observability/# Tools to measure performance or troubleshoot
 └── micro-benchmarks/              # Micro-benchmarks (NCCL, NCCOM, NVSHMEM, etc.)
 ```
 
-**NOTE**: The architectures are designed to work with the S3 bucket and VPC created using reference templates `1.architectures/0.common/` and `1.architectures/1.vpc_network/`. _You're strongly recommended to deploy these two templates **before** deploying any of the reference architectures._
+**NOTE**: The architectures are designed to work with the S3 bucket and VPC created using reference templates `architectures/common/` and `architectures/vpc_network/`. _You're strongly recommended to deploy these two templates **before** deploying any of the reference architectures._
 
 ## 0. Workshops
 
@@ -28,26 +28,26 @@ You can follow the workshops below to train models on AWS. Each contains example
 
 Posts about distributed ML training on AWS are published at <https://awslabs.github.io/awsome-distributed/>. The Hugo source lives on the [`content`](https://github.com/awslabs/awsome-distributed/tree/content) branch.
 
-Blog content is editorially curated by AWS authors. Code samples in this repo (`1.architectures/`, `3.test_cases/`, etc.) accept external contributions as usual — see [CONTRIBUTING.md](./CONTRIBUTING.md).
+Blog content is editorially curated by AWS authors. Code samples in this repo (`architectures/`, `examples/`, etc.) accept external contributions as usual — see [CONTRIBUTING.md](./CONTRIBUTING.md).
 
 ## 1. Architectures
 
-Architectures are located in `1.architectures` and consist of utilities and service-related architectures.
+Architectures are located in `architectures` and consist of utilities and service-related architectures.
 
 | Name                                                                           | Category | Usage                                                |
 | ------------------------------------------------------------------------------ | -------- | ---------------------------------------------------- |
-| [`0.common`](./1.architectures/0.common)                                       | Storage  | Common resources (S3 bucket, event notifications)    |
-| [`1.vpc_network`](./1.architectures/1.vpc_network)                             | Network  | Create a VPC with subnets and required resources     |
-| [`2.aws-parallelcluster`](./1.architectures/2.aws-parallelcluster)             | Compute  | Cluster templates for GPU & custom silicon training  |
-| [`3.aws-batch`](./1.architectures/3.aws-batch)                                 | Compute  | AWS Batch template for distributed training          |
-| [`4.amazon-eks`](./1.architectures/4.amazon-eks)                               | Compute  | Manifest files to train with Amazon EKS              |
-| [`5.sagemaker-hyperpod`](./1.architectures/5.sagemaker-hyperpod)               | Compute  | SageMaker HyperPod template for distributed training |
-| [`6.ldap_server`](./1.architectures/6.ldap_server)                             | Identity | LDAP server for multi-user cluster access            |
-| [`7.sagemaker-hyperpod-eks`](./1.architectures/7.sagemaker-hyperpod-eks)       | Compute  | SageMaker HyperPod with EKS orchestration            |
-| [`8.accounting-database`](./1.architectures/8.accounting-database)             | Tooling  | Accounting database for job tracking                 |
+| [`common`](./architectures/common)                                       | Storage  | Common resources (S3 bucket, event notifications)    |
+| [`vpc_network`](./architectures/vpc_network)                             | Network  | Create a VPC with subnets and required resources     |
+| [`aws-parallelcluster`](./architectures/aws-parallelcluster)             | Compute  | Cluster templates for GPU & custom silicon training  |
+| [`aws-batch`](./architectures/aws-batch)                                 | Compute  | AWS Batch template for distributed training          |
+| [`amazon-eks`](./architectures/amazon-eks)                               | Compute  | Manifest files to train with Amazon EKS              |
+| [`sagemaker-hyperpod-slurm`](./architectures/sagemaker-hyperpod-slurm)               | Compute  | SageMaker HyperPod template for distributed training |
+| [`ldap_server`](./architectures/ldap_server)                             | Identity | LDAP server for multi-user cluster access            |
+| [`sagemaker-hyperpod-eks`](./architectures/sagemaker-hyperpod-eks)       | Compute  | SageMaker HyperPod with EKS orchestration            |
+| [`accounting-database`](./architectures/accounting-database)             | Tooling  | Accounting database for job tracking                 |
 | [`aws-pcs`](./architectures/aws-pcs)                                           | Compute  | AWS Parallel Computing Service templates with Slurm scheduler |
 
-You will also find [documentation](./1.architectures/efa-cheatsheet.md) for EFA and the recommended environment variables.
+You will also find [documentation](./architectures/efa-cheatsheet.md) for EFA and the recommended environment variables.
 
 ## 2. Custom Amazon Machine Images
 
@@ -55,12 +55,12 @@ Custom machine images can be built using [Packer](https://www.packer.io) for AWS
 
 ## 3. Test Cases
 
-Test cases are organized under `3.test_cases/` by framework (e.g. `pytorch/`, `megatron/`, `jax/`). Within each framework, directories are named after the training library or method (e.g. `picotron/`, `FSDP/`, `megatron-lm/`).
+Test cases are organized under `examples/` by framework (e.g. `pytorch/`, `megatron/`, `jax/`). Within each framework, directories are named after the training library or method (e.g. `picotron/`, `FSDP/`, `megatron-lm/`).
 
 Each test case follows this general structure:
 
 ```
-3.test_cases/
+examples/
 └── <framework>/                # e.g. pytorch, megatron, jax
     └── <library>/              # e.g. picotron, FSDP, megatron-lm
         └── <model>/            # e.g. SmolLM-1.7B (may be omitted for single-model cases)
@@ -73,19 +73,19 @@ Each test case follows this general structure:
 
 The top-level directory for each test case contains general introduction and environment setup (Dockerfiles, training scripts, configs), while subdirectories provide service-specific launch instructions.
 
-Browse [`3.test_cases/`](./3.test_cases) to see the full list of available frameworks and test cases.
+Browse [`examples/`](./examples) to see the full list of available frameworks and test cases.
 
 ## 4. Validation and Observability
 
-Utility scripts and tools for validating your environment and monitoring training jobs are under `4.validation_and_observability/`.
+Utility scripts and tools for validating your environment and monitoring training jobs are under `validation_and_observability/`.
 
 | Name                                                                                            | Comments                                                        |
 | ----------------------------------------------------------------------------------------------- | --------------------------------------------------------------- |
-| [`1.pytorch-env-validation`](./4.validation_and_observability/1.pytorch-env-validation)         | Validates your PyTorch environment                              |
-| [`2.gpu-cluster-healthcheck`](./4.validation_and_observability/2.gpu-cluster-healthcheck)       | GPU cluster health checks                                       |
-| [`3.efa-node-exporter`](./4.validation_and_observability/3.efa-node-exporter)                   | Node exporter with Amazon EFA monitoring modules                |
-| [`4.prometheus-grafana`](./4.validation_and_observability/4.prometheus-grafana)                  | Monitoring for SageMaker HyperPod and EKS GPU clusters          |
-| [`5.nsight`](./4.validation_and_observability/5.nsight)                                         | Shows how to run Nvidia Nsight Systems to profile your workload |
+| [`1.pytorch-env-validation`](./validation_and_observability/1.pytorch-env-validation)         | Validates your PyTorch environment                              |
+| [`2.gpu-cluster-healthcheck`](./validation_and_observability/2.gpu-cluster-healthcheck)       | GPU cluster health checks                                       |
+| [`3.efa-node-exporter`](./validation_and_observability/3.efa-node-exporter)                   | Node exporter with Amazon EFA monitoring modules                |
+| [`4.prometheus-grafana`](./validation_and_observability/4.prometheus-grafana)                  | Monitoring for SageMaker HyperPod and EKS GPU clusters          |
+| [`5.nsight`](./validation_and_observability/5.nsight)                                         | Shows how to run Nvidia Nsight Systems to profile your workload |
 
 ## 5. Micro-benchmarks
 

@@ -14,7 +14,7 @@
 #             Sequence:
 #               - Script: s3://<bucket>/install-node-exporter.sh
 #               # Or use GitHub raw URL directly (no S3 upload required):
-#               # - Script: https://raw.githubusercontent.com/awslabs/awsome-distributed-training/main/1.architectures/2.aws-parallelcluster/post-install-scripts/install-node-exporter.sh
+#               # - Script: https://raw.githubusercontent.com/awslabs/awsome-distributed-training/main/architectures/aws-parallelcluster/post-install-scripts/install-node-exporter.sh
 #
 # Environment variables:
 #   NODE_EXPORTER_VERSION: Version to install (default: 1.9.1)

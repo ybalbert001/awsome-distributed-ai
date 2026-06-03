@@ -14,7 +14,7 @@ This repository provides CloudFormation templates and examples for running distr
 
 ## Prerequisites
 
-> **⚠️ Important**: You must deploy the VPC template [`2.vpc-one-az.yaml`](../../1.architectures/1.vpc_network/2.vpc-one-az.yaml) before deploying any Batch template. The Batch templates automatically fetch the EFA Security Group ID and Subnet ID from the VPC template's exported values.
+> **⚠️ Important**: You must deploy the VPC template [`2.vpc-one-az.yaml`](../../architectures/vpc_network/2.vpc-one-az.yaml) before deploying any Batch template. The Batch templates automatically fetch the EFA Security Group ID and Subnet ID from the VPC template's exported values.
 
 ## Architecture Overview
 
@@ -28,7 +28,7 @@ This architecture consists of the following AWS resources:
 | **Job Definition** | Template for job execution, references container images | [AWS Docs](https://docs.aws.amazon.com/batch/latest/userguide/job_definitions.html) |
 | **ECR Container Registry** | Stores Docker container images | [AWS Docs](https://docs.aws.amazon.com/AmazonECR/latest/userguide/what-is-ecr.html) |
 
-<img src="../../0.docs/batch-arch.png" width="600" alt="AWS Batch Architecture Diagram">
+<img src="../../docs/batch-arch.png" width="600" alt="AWS Batch Architecture Diagram">
 
 ## Available Templates
 

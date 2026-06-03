@@ -18,7 +18,7 @@ Make sure that your current directory is under a shared filesystem such as `/fsx
   ```bash
   cd ~
   git clone https://github.com/aws-samples/awsome-distributed-training/
-  cd awsome-distributed-training/3.test_cases/pytorch/nanoVLM/
+  cd awsome-distributed-training/examples/pytorch/nanoVLM/
   ```
 
 

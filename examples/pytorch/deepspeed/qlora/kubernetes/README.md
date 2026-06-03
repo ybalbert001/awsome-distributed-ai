@@ -10,7 +10,7 @@ Instructions for deploying QLoRA training on SageMaker HyperPod with EKS orchest
    - NVIDIA device plugin
    - Health monitoring agents (node health checks, deep health checks for GPU/NCCL)
 
-   See [1.architectures/7.sagemaker-hyperpod-eks/](../../../../../1.architectures/7.sagemaker-hyperpod-eks/) for cluster setup.
+   See [architectures/sagemaker-hyperpod-eks/](../../../../../architectures/sagemaker-hyperpod-eks/) for cluster setup.
 
 2. **FSx for Lustre filesystem** provisioned in the same VPC as the cluster.
    Note the File System ID, DNS name, and Mount name from the AWS console.
@@ -150,7 +150,7 @@ MIG_PROFILE=4g.40gb NUM_GPUS=2 \
 
 ### Enabling MIG on Nodes
 
-MIG mode must be enabled by a cluster administrator. See the [Slurm MIG guide](../slurm/README.md#mig-configuration) for step-by-step instructions — the `nvidia-smi` commands are the same on EKS worker nodes. On HyperPod EKS, you can configure MIG in the [lifecycle scripts](../../../../../1.architectures/7.sagemaker-hyperpod-eks/) or via a DaemonSet that runs on GPU nodes.
+MIG mode must be enabled by a cluster administrator. See the [Slurm MIG guide](../slurm/README.md#mig-configuration) for step-by-step instructions — the `nvidia-smi` commands are the same on EKS worker nodes. On HyperPod EKS, you can configure MIG in the [lifecycle scripts](../../../../../architectures/sagemaker-hyperpod-eks/) or via a DaemonSet that runs on GPU nodes.
 
 ## Monitor Training
 

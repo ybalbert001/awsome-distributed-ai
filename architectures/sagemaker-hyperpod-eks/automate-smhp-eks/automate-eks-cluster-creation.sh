@@ -484,7 +484,7 @@ setup_env_vars() {
     echo -e "${YELLOW}Generating new environment variables...${NC}"
     
     generate_env_vars() {
-        ./awsome-distributed-training/1.architectures/7.sagemaker-hyperpod-eks/create_config.sh
+        ./awsome-distributed-training/architectures/sagemaker-hyperpod-eks/create_config.sh
         # bash create_config.sh
     }
 
@@ -521,7 +521,7 @@ setup_env_vars() {
 setup_lifecycle_scripts() {
     echo -e "${BLUE}=== Setting Up Lifecycle Scripts ===${NC}"
 
-    cd awsome-distributed-training/1.architectures/7.sagemaker-hyperpod-eks/LifecycleScripts/base-config/
+    cd awsome-distributed-training/architectures/sagemaker-hyperpod-eks/LifecycleScripts/base-config/
 
 
     echo -e "${BLUE}Uploading your lifecycle scripts to S3 bucket ${YELLOW}${BUCKET}${NC}"

@@ -104,7 +104,7 @@ Once this change is done, you can install composer as `pip3 install -e .`
 The `single-node` folder also has the Dockerfile with commands to build the image and run the container. If you are opting to setup training with a Conda environment, then this setup is not needed. Run this setup only if you need to run MosaicML Composer from within a Nvidia PyTorch container.
 
 ```bash
-cd awsome-distributed-training/3.test_cases/6.stable-diffusion/single-node
+cd awsome-distributed-training/examples/6.stable-diffusion/single-node
 # build the image
 docker build --build-arg MOSAICML_VERSION=${MOSAICML_VERSION} --build-arg PYTORCH_IMAGE=${PYTORCH_IMAGE} --build-arg PYTORCH_INDEX_URL=${PYTORCH_INDEX_URL} -t ${DOCKER_IMAGE_NAME}:${TAG} -f 0.Dockerfile .
 
@@ -186,7 +186,7 @@ More details on this can be found here: https://pytorch.org/blog/accelerated-dif
 
 ### 2.1 Multi-Node Training with Slurm
 
-For the multi-node training we've created a [Dockerfile](https://github.com/awslabs/awsome-distributed-training/blob/multi-node/3.test_cases/6.stable-diffusion/multi-node/1.Dockerfile), and Slurm submit script to submit the training job. To get started please follow the guide [AWS ParallelCluster Distributed Training](../../1.architectures/2.aws-parallelcluster). Before starting this section make sure you have the following setup:
+For the multi-node training we've created a [Dockerfile](https://github.com/awslabs/awsome-distributed-training/blob/multi-node/examples/6.stable-diffusion/multi-node/1.Dockerfile), and Slurm submit script to submit the training job. To get started please follow the guide [AWS ParallelCluster Distributed Training](../../architectures/aws-parallelcluster). Before starting this section make sure you have the following setup:
 
 * AWS ParallelCluster >= 3.7.0
 * Pyxis
@@ -240,7 +240,7 @@ rain          Epoch   0:  100%|████████████████�
 
 ### 2.2 Multi-Node Training with Amazon EKS
 
-Next we will show how to train stable diffusion with Mosaic ML's [composer](https://github.com/mosaicml/composer/tree/dev) on [Amazon EKS](https://aws.amazon.com/eks/). To start we have created an EKS cluster following the steps [here](https://github.com/awslabs/awsome-distributed-training/tree/main/1.architectures/4.amazon-eks). You can follow these steps to add a nodegroup of `p5.48xlarge` instances. First export these environment variables. 
+Next we will show how to train stable diffusion with Mosaic ML's [composer](https://github.com/mosaicml/composer/tree/dev) on [Amazon EKS](https://aws.amazon.com/eks/). To start we have created an EKS cluster following the steps [here](https://github.com/awslabs/awsome-distributed-training/tree/main/architectures/amazon-eks). You can follow these steps to add a nodegroup of `p5.48xlarge` instances. First export these environment variables. 
 
 ```bash
 export AWS_REGION=us-west-2
@@ -391,7 +391,7 @@ cd /eks/deployment/kubeflow/training-operator
 
 #### 2.2.6 Now we can start training
 
-We provide a template YAML file for submitting the stable diffusion distributed training job in [3.stable-diffusion-eks.yaml-template](https://github.com/awslabs/awsome-distributed-training/blob/stable-diffusion-eks/3.test_cases/6.stable-diffusion/multi-node/3.stable-diffusion-eks.yaml-template). You can substitute the environment variables in the template manifest as:
+We provide a template YAML file for submitting the stable diffusion distributed training job in [3.stable-diffusion-eks.yaml-template](https://github.com/awslabs/awsome-distributed-training/blob/stable-diffusion-eks/examples/6.stable-diffusion/multi-node/3.stable-diffusion-eks.yaml-template). You can substitute the environment variables in the template manifest as:
 
 ```bash
 cat 3.mosaicml-sd-eks.yaml-template | envsubst > mosaicml-sd-eks.yaml

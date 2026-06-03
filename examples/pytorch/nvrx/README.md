@@ -43,14 +43,14 @@ Two injection modes are supported:
 
 ## Prerequisites
 
-To run these tests, you need a training cluster with GPU nodes and shared storage. Instructions for creating a cluster can be found in [1.architectures](../../../1.architectures), the [aws-do-eks](https://bit.ly/do-eks) project, or [EKS Blueprints](https://github.com/aws-ia/terraform-aws-eks-blueprints).
+To run these tests, you need a training cluster with GPU nodes and shared storage. Instructions for creating a cluster can be found in [architectures](../../../architectures), the [aws-do-eks](https://bit.ly/do-eks) project, or [EKS Blueprints](https://github.com/aws-ia/terraform-aws-eks-blueprints).
 
 ## 1. Build Container Image
 
 From the `nvrx/` directory, build a container image with PyTorch 2.9, NVRx 0.4.1, and the training scripts:
 
 ```bash
-cd 3.test_cases/pytorch/nvrx
+cd examples/pytorch/nvrx
 
 export AWS_REGION=$(aws ec2 describe-availability-zones --output text --query 'AvailabilityZones[0].[RegionName]')
 export ACCOUNT=$(aws sts get-caller-identity --query Account --output text)

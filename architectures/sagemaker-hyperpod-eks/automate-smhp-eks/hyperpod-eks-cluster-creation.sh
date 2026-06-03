@@ -414,7 +414,7 @@ setup_env_vars() {
     echo -e "${YELLOW}Generating new environment variables...${NC}"
     
     generate_env_vars() {
-        ./awsome-distributed-training/1.architectures/7.sagemaker-hyperpod-eks/create_config.sh
+        ./awsome-distributed-training/architectures/sagemaker-hyperpod-eks/create_config.sh
     }
 
     # Capture stdout + stderr

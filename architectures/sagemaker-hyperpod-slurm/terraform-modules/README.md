@@ -18,7 +18,7 @@ The Terraform modules create:
 1. **Clone and Navigate**
    ```bash
    git clone https://github.com/awslabs/awsome-distributed-training.git
-   cd awsome-distributed-training/1.architectures/5.sagemaker-hyperpod/terraform-modules/hyperpod-slurm-tf
+   cd awsome-distributed-training/architectures/sagemaker-hyperpod-slurm/terraform-modules/hyperpod-slurm-tf
    ```
 
 2. **Customize Configuration**
