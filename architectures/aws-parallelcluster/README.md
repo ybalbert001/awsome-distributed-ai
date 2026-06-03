@@ -9,7 +9,7 @@ This README provides a "vanilla" reference architectures and deployment guide fo
 
 ## Architecture
 
-![AWS ParallelCluster diagram](../../docs/core-infra-architecture.png)
+![AWS ParallelCluster diagram](../../assets/core-infra-architecture.png)
 
 The infrastructure consists of the two layers:
 
@@ -232,7 +232,7 @@ Please follow the steps below to deploy your resources:
 > The above CloudFormation stack uses FSx for Lustre `PERSISTENT_2` deployment type by default. If your selected availability zone doesn't support `PERSISTENT_2` or you specifically need to use `PERSISTENT_1` deployment type, please use the link below instead:
 > [<kbd> <br> 1-Click Deploy 🚀 <br> </kbd>](https://console.aws.amazon.com/cloudformation/home#/stacks/quickcreate?templateUrl=https://awsome-distributed-training.s3.amazonaws.com/templates/parallelcluster-prerequisites-p1.yaml&stackName=parallelcluster-prerequisites)
 
-![parallelcluster-prerequisites-cfn](../../docs/parallelcluster-prerequisites-cfn.png)
+![parallelcluster-prerequisites-cfn](../../assets/parallelcluster-prerequisites-cfn.png)
 
 2. Once the CloudFormation stack deployment is complete, you'll need to export the stack name as an environment variable for future steps:
 
@@ -453,7 +453,7 @@ Once the cluster goes into **CREATE COMPLETE**, we can connect to the head node 
 **SSH** can be used to connect to the cluster from a standard SSH client. This can be configured to use your own key via adding the public key or a new key can be provisioned.
 
 ### SSM Connect
-![ssm connect](../../docs/ssm-connect.png)
+![ssm connect](../../assets/ssm-connect.png)
 You'll need to be authenticated to the AWS account that instance is running in and have permission to launch a SSM session . Once you're connected you'll have access to a terminal on the head node:
 
 Now change to `ubuntu` user:
@@ -462,7 +462,7 @@ Now change to `ubuntu` user:
 sudo su - ubuntu
 ```
 
-![ssm user connect](../../docs/ssm-connect-user.png)
+![ssm user connect](../../assets/ssm-connect-user.png)
 
 ### SSH access
 

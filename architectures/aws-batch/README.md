@@ -28,7 +28,7 @@ This architecture consists of the following AWS resources:
 | **Job Definition** | Template for job execution, references container images | [AWS Docs](https://docs.aws.amazon.com/batch/latest/userguide/job_definitions.html) |
 | **ECR Container Registry** | Stores Docker container images | [AWS Docs](https://docs.aws.amazon.com/AmazonECR/latest/userguide/what-is-ecr.html) |
 
-<img src="../../docs/batch-arch.png" width="600" alt="AWS Batch Architecture Diagram">
+<img src="../../assets/batch-arch.png" width="600" alt="AWS Batch Architecture Diagram">
 
 ## Available Templates
 

@@ -48,7 +48,7 @@ aws cloudformation create-stack --stack-name vpc-stack-ml\
 
 #### Architecture Diagram
 
-<img src="../../docs/vpc-all-az.png" width="800">
+<img src="../../assets/vpc-all-az.png" width="800">
 
 ### 2. Template VPC One AZs
 
@@ -83,4 +83,4 @@ aws cloudformation create-stack --stack-name vpc-stack-ml\
 
 #### Architecture Diagram
 
-<img src="../../docs/vpc-one-az.png" width="300">
+<img src="../../assets/vpc-one-az.png" width="300">
