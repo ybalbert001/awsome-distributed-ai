@@ -4,7 +4,7 @@
 
 set -euo pipefail
 
-# torchtitan host environment for awsome-distributed-training.
+# torchtitan host environment for awsome-distributed-ai.
 #
 # Replaces the previous Miniconda-based setup with a stdlib `python -m venv`
 # environment, and pins all components to released versions instead of

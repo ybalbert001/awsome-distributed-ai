@@ -7,7 +7,7 @@
 export OMP_NUM_THREADS=1
 export HF_TOKEN="<Your Hugging Face Token>"
 
-INPUT_PATH="/fsx/ubuntu/awsome-distributed-training/examples/training/optimum-neuron/llama3/src/get_model.py"
+INPUT_PATH="/fsx/ubuntu/awsome-distributed-ai/examples/training/optimum-neuron/llama3/src/get_model.py"
 MODEL_ID="meta-llama/Meta-Llama-3-8B-Instruct"
 MODEL_OUTPUT_PATH="/fsx/ubuntu/peft_ft/model_artifacts/llama3-8B"
 TOKENIZER_OUTPUT_PATH="/fsx/ubuntu/peft_ft/tokenizer/llama3-8B"

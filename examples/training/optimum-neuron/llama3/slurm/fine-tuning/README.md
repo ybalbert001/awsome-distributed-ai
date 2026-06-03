@@ -40,13 +40,13 @@ You will also need to complete the following prerequisites:
 
 ## Step 1: Download Training Scripts
 
-Begin by downloading the training scripts from the awsome-distributed-training repo:
+Begin by downloading the training scripts from the awsome-distributed-ai repo:
 
 ```bash
 cd ~/
-git clone https://github.com/awslabs/awsome-distributed-training
+git clone https://github.com/awslabs/awsome-distributed-ai
 
-cd ~/awsome-distributed-training/examples/training/optimum-neuron/llama3/slurm/fine-tuning
+cd ~/awsome-distributed-ai/examples/training/optimum-neuron/llama3/slurm/fine-tuning
 ```
 
 ## Step 2: Setup Python Environment

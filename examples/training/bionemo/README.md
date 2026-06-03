@@ -59,8 +59,8 @@ export DATASET_PATH=/fsx/
 
 ```bash
 cd /apps/
-git clone https://github.com/awslabs/awsome-distributed-training.git
-cp -r /apps/awsome-distributed-training/examples/14.bionemo/* ./apps/
+git clone https://github.com/awslabs/awsome-distributed-ai.git
+cp -r /apps/awsome-distributed-ai/examples/14.bionemo/* ./apps/
 ```
 
 ## 2. Pull Image

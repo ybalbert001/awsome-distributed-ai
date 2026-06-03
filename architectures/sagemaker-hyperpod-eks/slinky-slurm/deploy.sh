@@ -414,7 +414,7 @@ deploy_tf() {
     if [[ ! -d "${tf_dir}" ]]; then
         echo "Error: Terraform modules directory not found: ${tf_dir}"
         echo "  Expected at: ${tf_dir}"
-        echo "  Make sure you have cloned the awsome-distributed-training repo."
+        echo "  Make sure you have cloned the awsome-distributed-ai repo."
         exit 1
     fi
 

@@ -23,12 +23,12 @@ kubectl config current-context
 ```
 arn:aws:eks:us-west-1:xxxxxxxxxxxx:cluster/xxx-eks-cluster
 ```
-### 0.3. Clone the awsome-distributed-training reposource code
+### 0.3. Clone the awsome-distributed-ai reposource code
 Clone this repo. 
 
 ```
-git clone https://github.com/awslabs/awsome-distributed-training/
-cd awsome-distributed-training/examples/training/fsdp/kubernetes
+git clone https://github.com/awslabs/awsome-distributed-ai/
+cd awsome-distributed-ai/examples/training/fsdp/kubernetes
 ```
 
 ### 0.4. Envsubst
@@ -54,7 +54,7 @@ docker build -f Dockerfile -t ${REGISTRY}fsdp:pytorch2.7.1 .
 popd
 ```
 
-The PyTorch FSDP container uses the [nccl-tests](https://github.com/awslabs/awsome-distributed-training/blob/main/micro-benchmarks/nccl-tests/nccl-tests.Dockerfile) container as base.
+The PyTorch FSDP container uses the [nccl-tests](https://github.com/awslabs/awsome-distributed-ai/blob/main/micro-benchmarks/nccl-tests/nccl-tests.Dockerfile) container as base.
 
 ## 2. Push container image to Amazon ECR
 

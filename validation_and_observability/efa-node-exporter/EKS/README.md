@@ -20,8 +20,8 @@ export LOCAL_PORT=9000 # Local port to curl prometheus metrics
 To build the Docker image:
 
 ```bash
-git clone https://github.com/awslabs/awsome-distributed-training.git
-cd awsome-distributed-training/validation_and_observability/efa-node-exporter/
+git clone https://github.com/awslabs/awsome-distributed-ai.git
+cd awsome-distributed-ai/validation_and_observability/efa-node-exporter/
 
 docker build -t ${REGISTRY}${IMAGE}${TAG} -f Dockerfile .
 ```

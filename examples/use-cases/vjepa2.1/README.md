@@ -53,8 +53,8 @@ Several utility scripts (`generate_synthetic_dataset.py`, `nsys_wrapper.sh`, `pr
 ## 1. Clone this repository
 
 ```bash
-git clone https://github.com/awslabs/awsome-distributed-training.git
-cd awsome-distributed-training/examples/use-cases/vjepa2.1
+git clone https://github.com/awslabs/awsome-distributed-ai.git
+cd awsome-distributed-ai/examples/use-cases/vjepa2.1
 ```
 
 ## 2. Datasets

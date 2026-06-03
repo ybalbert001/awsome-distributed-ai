@@ -145,8 +145,8 @@ hyperpod-i-0f9e8d7c6b5a43210   Ready    <none>   2d    v1.33.5-eks-ecaa3a6   Sch
 ### Clone the repository
 
 ```bash
-git clone https://github.com/awslabs/awsome-distributed-training/
-cd awsome-distributed-training/examples/training/trl/openenv-wordle-grpo
+git clone https://github.com/awslabs/awsome-distributed-ai/
+cd awsome-distributed-ai/examples/training/trl/openenv-wordle-grpo
 ```
 
 ## 1. Build Container Image

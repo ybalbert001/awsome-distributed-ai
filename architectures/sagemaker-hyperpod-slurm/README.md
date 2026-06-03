@@ -10,7 +10,7 @@ SageMaker HyperPod clusters provide the ability to create customized clusters, t
 
 The example that follows describes the process of setting up a SageMaker HyperPod cluster with an attached FSX for Lustre volume.
 
-**Note: For a guided set-up experience, check out the [HyperPod automation script](https://github.com/awslabs/awsome-distributed-training/tree/main/architectures/sagemaker-hyperpod-slurm/automate-smhp-slurm/README.md).**
+**Note: For a guided set-up experience, check out the [HyperPod automation script](https://github.com/awslabs/awsome-distributed-ai/tree/main/architectures/sagemaker-hyperpod-slurm/automate-smhp-slurm/README.md).**
 
 
 ## 2. Prerequisites

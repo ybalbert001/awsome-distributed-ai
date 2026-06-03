@@ -7,8 +7,8 @@ Scripted fork of the [Prometheus Node Exporter](https://github.com/prometheus/no
 To create the docker image run:
 
 ```bash
-git clone https://github.com/awslabs/awsome-distributed-training.git
-cd awsome-distributed-training/validation_and_observability/efa-node-exporter
+git clone https://github.com/awslabs/awsome-distributed-ai.git
+cd awsome-distributed-ai/validation_and_observability/efa-node-exporter
 make
 ```
 

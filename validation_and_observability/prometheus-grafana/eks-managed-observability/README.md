@@ -112,7 +112,7 @@ You should see GPU metrics like `DCGM_FI_DEV_GPU_UTIL`, `DCGM_FI_DEV_GPU_TEMP`, 
 Use the provided script for automated setup:
 
 ```bash
-cd awsome-distributed-training/validation_and_observability/prometheus-grafana/eks-managed-observability
+cd awsome-distributed-ai/validation_and_observability/prometheus-grafana/eks-managed-observability
 ./deploy-obs.sh
 ```
 

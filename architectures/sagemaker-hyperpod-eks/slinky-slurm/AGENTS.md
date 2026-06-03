@@ -1,7 +1,7 @@
 # AGENTS.md — slinky-slurm
 
 > Guidelines for AI coding agents operating in the `slinky-slurm` subdirectory of
-> `awsome-distributed-training`. This is an infrastructure-as-code project for deploying
+> `awsome-distributed-ai`. This is an infrastructure-as-code project for deploying
 > Slurm on Amazon SageMaker HyperPod EKS via the Slinky Project (SchedMD).
 
 ## Project Overview

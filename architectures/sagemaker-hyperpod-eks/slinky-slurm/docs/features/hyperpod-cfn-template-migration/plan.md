@@ -10,7 +10,7 @@ completed: 2026-03-06
 ## Overview
 
 Migrate the CloudFormation deployment path from the old
-`awsome-distributed-training` nested stack templates to the official
+`awsome-distributed-ai` nested stack templates to the official
 SageMaker HyperPod service team maintained templates at
 `github.com/aws/sagemaker-hyperpod-cluster-setup`.
 
@@ -18,7 +18,7 @@ SageMaker HyperPod service team maintained templates at
 
 ### Old System (current)
 
-- **Template source:** `awsome-distributed-training/.../cfn-templates/nested-stacks/main-stack.yaml`
+- **Template source:** `awsome-distributed-ai/.../cfn-templates/nested-stacks/main-stack.yaml`
   (curled at deploy time from GitHub raw URL)
 - **Params format:** Flat key-value pairs with individual parameters for each
   instance group property (`AcceleratedInstanceType`, `AcceleratedInstanceCount`,

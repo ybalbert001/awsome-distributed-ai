@@ -55,8 +55,8 @@ These tools are essential for following the deployment steps in this guide and m
 First, clone the repository and move to this directory:
 
 ```bash
-git clone https://github.com/awslabs/awsome-distributed-training.git
-cd awsome-distributed-training/architectures/aws-parallelcluster
+git clone https://github.com/awslabs/awsome-distributed-ai.git
+cd awsome-distributed-ai/architectures/aws-parallelcluster
 ```
 
 Then create a directory under home directory to store cluster config files:

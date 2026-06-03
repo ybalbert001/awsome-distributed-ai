@@ -17,8 +17,8 @@ Make sure that your current directory is under a shared filesystem such as `/fsx
 
   ```bash
   cd ~
-  git clone https://github.com/aws-samples/awsome-distributed-training/
-  cd awsome-distributed-training/examples/use-cases/nanovlm/
+  git clone https://github.com/aws-samples/awsome-distributed-ai/
+  cd awsome-distributed-ai/examples/use-cases/nanovlm/
   ```
 
 

@@ -25,8 +25,8 @@ First, prepare your container image with all necessary dependencies:
 ```bash
 # Clone the repository
 cd ~
-git clone https://github.com/awslabs/awsome-distributed-training/
-cd awsome-distributed-training/examples/use-cases/llm-distillation
+git clone https://github.com/awslabs/awsome-distributed-ai/
+cd awsome-distributed-ai/examples/use-cases/llm-distillation
 
 # Set up environment variables
 aws ecr-public get-login-password --region us-east-1 | docker login --username AWS --password-stdin public.ecr.aws/hpc-cloud

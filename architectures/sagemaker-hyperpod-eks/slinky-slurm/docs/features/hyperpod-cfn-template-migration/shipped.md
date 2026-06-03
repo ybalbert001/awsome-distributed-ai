@@ -11,7 +11,7 @@ shipped: 2026-03-12
 ## Summary
 
 Migrated the CloudFormation deployment path from the legacy
-`awsome-distributed-training` nested stack templates (curled from GitHub
+`awsome-distributed-ai` nested stack templates (curled from GitHub
 at deploy time) to the official SageMaker HyperPod service team S3-hosted
 templates at `aws-sagemaker-hyperpod-cluster-setup-<region>-prod`.
 

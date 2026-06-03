@@ -45,7 +45,7 @@ arn:aws:eks:us-east-2:xxxxxxxxxxxx:cluster/xxx-eks-cluster
 ### 0.3. Clone the repository
 
 ```bash
-git clone https://github.com/awslabs/awsome-distributed-training/
+git clone https://github.com/awslabs/awsome-distributed-ai/
 ```
 
 ## 1. Build container image

@@ -48,7 +48,7 @@ examples/
 
 ## Checklist
 
-- [ ] I have read the [contributing guidelines](https://github.com/awslabs/awsome-distributed-training/blob/main/CONTRIBUTING.md).
+- [ ] I have read the [contributing guidelines](https://github.com/awslabs/awsome-distributed-ai/blob/main/CONTRIBUTING.md).
 - [ ] I am working against the latest `main` branch.
 - [ ] I have searched existing open and recently merged PRs to confirm this is not a duplicate.
 - [ ] The contribution is self-contained with documentation and scripts.

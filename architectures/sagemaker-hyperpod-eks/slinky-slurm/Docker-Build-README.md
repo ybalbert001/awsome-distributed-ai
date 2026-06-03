@@ -8,8 +8,8 @@ This build includes Python 3.12.8 + PyTorch 2.6.0 + CUDA 12.6 + NCCL 2.23.4 + EF
 
 Clone the AWSome Distributed Training repo:
 ```
-git clone https://github.com/awslabs/awsome-distributed-training.git
-cd awsome-distributed-training/architectures/sagemaker-hyperpod-eks/slinky-slurm/
+git clone https://github.com/awslabs/awsome-distributed-ai.git
+cd awsome-distributed-ai/architectures/sagemaker-hyperpod-eks/slinky-slurm/
 
 ```
 

@@ -11,8 +11,8 @@ On your cluster head node,
 
 ```bash
 cd /fsx
-git clone https://github.com/awslabs/awsome-distributed-training/
-cd awsome-distributed-training/examples/training/fsdp/slurm
+git clone https://github.com/awslabs/awsome-distributed-ai/
+cd awsome-distributed-ai/examples/training/fsdp/slurm
 ```
 
 3. You can launch the training through:

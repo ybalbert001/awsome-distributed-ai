@@ -125,7 +125,7 @@ Scheduling:
       CustomActions:
         OnNodeConfigured:
           Sequence:
-            - Script: https://raw.githubusercontent.com/awslabs/awsome-distributed-training/main/architectures/aws-parallelcluster/post-install-scripts/install-node-exporter.sh
+            - Script: https://raw.githubusercontent.com/awslabs/awsome-distributed-ai/main/architectures/aws-parallelcluster/post-install-scripts/install-node-exporter.sh
       Networking:
         AdditionalSecurityGroups:
           - <PrometheusClusterSecurityGroup>  # Retrieved from previous step

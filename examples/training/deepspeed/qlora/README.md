@@ -66,8 +66,8 @@ kubectl logs -f qwen3-qlora-training-zero3-master-0 -n ml-training
 ```bash
 # 1. Clone the repository to the shared filesystem
 cd /fsx
-git clone https://github.com/awslabs/awsome-distributed-training.git
-cd awsome-distributed-training/examples/training/deepspeed/qlora
+git clone https://github.com/awslabs/awsome-distributed-ai.git
+cd awsome-distributed-ai/examples/training/deepspeed/qlora
 
 # 2. Create virtual environment and install dependencies
 python3 -m venv /fsx/venvs/qwen3-qlora

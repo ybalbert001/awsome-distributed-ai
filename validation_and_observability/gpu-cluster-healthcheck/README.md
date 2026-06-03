@@ -21,8 +21,8 @@ The suite provides two operational modes: **lightweight checks** for regular use
 
 ```bash
 # Clone the repository
-git clone https://github.com/awslabs/awsome-distributed-training.git
-cd awsome-distributed-training/validation_and_observability/gpu-cluster-healthcheck
+git clone https://github.com/awslabs/awsome-distributed-ai.git
+cd awsome-distributed-ai/validation_and_observability/gpu-cluster-healthcheck
 
 # Make all scripts executable
 chmod +x gpu-healthcheck.sh checks/*.sh slurm/*.sh slurm/examples/*.sh

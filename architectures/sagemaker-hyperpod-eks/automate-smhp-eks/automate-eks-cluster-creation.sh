@@ -286,9 +286,9 @@ install_helm() {
     fi
 }
 
-# Function to clone the awsome-distributed-training repository
+# Function to clone the awsome-distributed-ai repository
 clone_adt() {
-    REPO_NAME="awsome-distributed-training"
+    REPO_NAME="awsome-distributed-ai"
     if [ -d "$REPO_NAME" ]; then
         echo -e "${YELLOW}⚠️  The directory '$REPO_NAME' already exists.${NC}"
         echo -e "${GREEN}Do you want to remove it and clone again? (yes/no): ${NC}"
@@ -297,14 +297,14 @@ clone_adt() {
             echo -e "${YELLOW}Removing existing directory...${NC}"
             rm -rf "$REPO_NAME"
             echo -e "${BLUE}Cloning repository...${NC}"
-            git clone --depth=1 https://github.com/awslabs/awsome-distributed-training/
+            git clone --depth=1 https://github.com/awslabs/awsome-distributed-ai/
             echo -e "${GREEN}✅ Repository cloned successfully${NC}"
         else
             echo -e "${BLUE}Using existing directory...${NC}"
         fi
     else
         echo -e "${BLUE}Cloning repository $REPO_NAME...${NC}"
-        git clone --depth=1 https://github.com/awslabs/awsome-distributed-training/
+        git clone --depth=1 https://github.com/awslabs/awsome-distributed-ai/
         echo -e "${GREEN}✅ Repository cloned successfully${NC}"
     fi
 }
@@ -464,7 +464,7 @@ check_and_prompt_env_vars() {
 # Function to setup environment variables
 setup_env_vars() {
     echo -e "${BLUE}=== Setting Up Environment Variables ===${NC}"
-    echo -e "${GREEN}Cloning awsome-distributed-training${NC}"
+    echo -e "${GREEN}Cloning awsome-distributed-ai${NC}"
     clone_adt
 
     # Clear env_vars from previous runs
@@ -484,7 +484,7 @@ setup_env_vars() {
     echo -e "${YELLOW}Generating new environment variables...${NC}"
     
     generate_env_vars() {
-        ./awsome-distributed-training/architectures/sagemaker-hyperpod-eks/create_config.sh
+        ./awsome-distributed-ai/architectures/sagemaker-hyperpod-eks/create_config.sh
         # bash create_config.sh
     }
 
@@ -521,7 +521,7 @@ setup_env_vars() {
 setup_lifecycle_scripts() {
     echo -e "${BLUE}=== Setting Up Lifecycle Scripts ===${NC}"
 
-    cd awsome-distributed-training/architectures/sagemaker-hyperpod-eks/LifecycleScripts/base-config/
+    cd awsome-distributed-ai/architectures/sagemaker-hyperpod-eks/LifecycleScripts/base-config/
 
 
     echo -e "${BLUE}Uploading your lifecycle scripts to S3 bucket ${YELLOW}${BUCKET}${NC}"

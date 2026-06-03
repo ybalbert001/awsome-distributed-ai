@@ -64,7 +64,7 @@ declare -a TORCHRUN_ARGS=(
     --nnodes=$SLURM_JOB_NUM_NODES
 )
 
-export TRAIN_SCRIPT=/fsx/ubuntu/awsome-distributed-training/examples/training/optimum-neuron/llama3/src/train.py
+export TRAIN_SCRIPT=/fsx/ubuntu/awsome-distributed-ai/examples/training/optimum-neuron/llama3/src/train.py
 
 ############################
 ##### Training Params ######

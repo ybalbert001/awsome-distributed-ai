@@ -45,7 +45,7 @@ resource "aws_iam_role_policy_attachment" "hpto-policy" {
 # at https://docs.aws.amazon.com/sagemaker/latest/dg/sagemaker-eks-operator-install.html
 # and is immune to future addon-metadata changes.
 #
-# See: https://github.com/awslabs/awsome-distributed-training/issues/1075
+# See: https://github.com/awslabs/awsome-distributed-ai/issues/1075
 resource "aws_eks_pod_identity_association" "hpto_association" {
   cluster_name    = var.eks_cluster_name
   namespace       = "aws-hyperpod"

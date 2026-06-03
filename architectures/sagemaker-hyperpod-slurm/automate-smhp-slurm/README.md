@@ -27,7 +27,7 @@ This demo gif showcases the step-by-step process of creating and setting up a Sa
 
 1. Clone this repository:
    ```bash
-   git clone https://github.com/awslabs/awsome-distributed-training.git
+   git clone https://github.com/awslabs/awsome-distributed-ai.git
    cd architectures/sagemaker-hyperpod-slurm/automate-smhp-slurm
    ```
 
@@ -48,7 +48,7 @@ The script will guide you through the following steps:
 
 1. Check and install/update AWS CLI if necessary.
 2. Verify Git installation.
-3. Clone the "awsome-distributed-training" repository.
+3. Clone the "awsome-distributed-ai" repository.
 4. Set up environment variables.
 5. Configure lifecycle scripts for SageMaker Hyperpod.
 

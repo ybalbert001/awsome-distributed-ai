@@ -181,7 +181,7 @@ kubectl get nodes -o wide
 |---------|-------|-----|
 | Stack creation fails with capacity error | AZ doesn't have capacity for the instance type | Try a different `--az-id` |
 | `ROLLBACK_COMPLETE` status | CFN template parameter issue | Check CloudFormation events: `aws cloudformation describe-stack-events --stack-name <name>` |
-| Terraform plan fails | Missing terraform-modules directory | Ensure the full `awsome-distributed-training` repo is cloned, not just the slinky-slurm subdirectory |
+| Terraform plan fails | Missing terraform-modules directory | Ensure the full `awsome-distributed-ai` repo is cloned, not just the slinky-slurm subdirectory |
 | `env_vars.sh` not created | Script failed before output extraction | Check the script output for errors and re-run |
 | AZ ID validation warning | Specified AZ not in the region | Use one of the AZ IDs shown in the "Available AZs" message |
 | Stack already exists | Previous deployment not cleaned up | Run `destroy.sh` first, or use a different `--stack-name` |

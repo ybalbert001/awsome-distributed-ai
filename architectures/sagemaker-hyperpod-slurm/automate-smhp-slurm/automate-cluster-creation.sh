@@ -105,7 +105,7 @@ check_git() {
 }
 
 clone_adt() {
-    REPO_NAME="awsome-distributed-training"
+    REPO_NAME="awsome-distributed-ai"
     if [ -d "$REPO_NAME" ]; then
         echo -e "${YELLOW}⚠️  The directory '$REPO_NAME' already exists.${NC}"
         echo -e "${GREEN}Do you want to remove it and clone again? (yes/no): ${NC}"
@@ -114,14 +114,14 @@ clone_adt() {
             echo -e "${YELLOW}Removing existing directory...${NC}"
             rm -rf "$REPO_NAME"
             echo -e "${BLUE}Cloning repository...${NC}"
-            git clone --depth=1 https://github.com/awslabs/awsome-distributed-training/
+            git clone --depth=1 https://github.com/awslabs/awsome-distributed-ai/
             echo -e "${GREEN}✅ Repository cloned successfully${NC}"
         else
             echo -e "${BLUE}Using existing directory...${NC}"
         fi
     else
         echo -e "${BLUE}Cloning repository $REPO_NAME...${NC}"
-        git clone --depth=1 https://github.com/awslabs/awsome-distributed-training/
+        git clone --depth=1 https://github.com/awslabs/awsome-distributed-ai/
         echo -e "${GREEN}✅ Repository cloned successfully${NC}"
     fi
 }
@@ -166,7 +166,7 @@ multi_headnode() {
 
             echo -e "${YELLOW}The following CloudFormation command will be executed:${NC}"
             echo -e "${GREEN}aws cloudformation deploy \\
-                --template-file awsome-distributed-training/architectures/sagemaker-hyperpod-slurm/sagemaker-hyperpod-slurm-multi-headnode.yaml \\
+                --template-file awsome-distributed-ai/architectures/sagemaker-hyperpod-slurm/sagemaker-hyperpod-slurm-multi-headnode.yaml \\
                 --stack-name ${MULTI_HEAD_SLURM_STACK} \\
                 --parameter-overrides \\
                     SlurmDBSecurityGroupId=${SECURITY_GROUP} \\
@@ -185,7 +185,7 @@ multi_headnode() {
 
             # Deploy the multi-head CF stack
             aws cloudformation deploy \
-                --template-file awsome-distributed-training/architectures/sagemaker-hyperpod-slurm/sagemaker-hyperpod-slurm-multi-headnode.yaml \
+                --template-file awsome-distributed-ai/architectures/sagemaker-hyperpod-slurm/sagemaker-hyperpod-slurm-multi-headnode.yaml \
                 --stack-name ${MULTI_HEAD_SLURM_STACK} \
                 --parameter-overrides \
                     SlurmDBSecurityGroupId=${SECURITY_GROUP} \
@@ -237,7 +237,7 @@ multi_headnode() {
         create_and_attach_policy() {
             aws iam create-policy \
                 --policy-name AmazonSageMakerExecutionPolicy \
-                --policy-document file://awsome-distributed-training/architectures/sagemaker-hyperpod-slurm/1.AmazonSageMakerClustersExecutionRolePolicy.json --output json && \
+                --policy-document file://awsome-distributed-ai/architectures/sagemaker-hyperpod-slurm/1.AmazonSageMakerClustersExecutionRolePolicy.json --output json && \
             aws iam attach-role-policy \
                 --role-name $SLURM_EXECUTION_ROLE \
                 --policy-arn arn:aws:iam::${AWS_ACCOUNT_ID}:policy/AmazonSageMakerExecutionPolicy
@@ -251,13 +251,13 @@ multi_headnode() {
             
             if [[ $error_output == *"EntityAlreadyExists"* ]]; then
                 echo -e "\n${YELLOW}If the error you received is that the policy already exists, you can either:${NC}" 
-                echo -e "\n${GREEN}     1. Continue the script with the existing policy (make sure the permissions match the ones in https://github.com/awslabs/awsome-distributed-training/blob/main/architectures/sagemaker-hyperpod-slurm/1.AmazonSageMakerClustersExecutionRolePolicy.json) and manually attach it to your role ${SLURM_EXECUTION_ROLE}, or${NC}" 
+                echo -e "\n${GREEN}     1. Continue the script with the existing policy (make sure the permissions match the ones in https://github.com/awslabs/awsome-distributed-ai/blob/main/architectures/sagemaker-hyperpod-slurm/1.AmazonSageMakerClustersExecutionRolePolicy.json) and manually attach it to your role ${SLURM_EXECUTION_ROLE}, or${NC}" 
                 echo -e "\n${GREEN}     2. You can create a new policy with a name different than 'AmazonSageMakerExecutionPolicy' manually and attach it to your 'AmazonSageMakerExecutionRole' with the following command. Once you do that, you can continue with the rest of the script:${NC}"
 
                 echo -e "\n${YELLOW} Creating an IAM policy (required for option 2 above)${NC}"
                 echo -e "\n${BLUE}         aws iam create-policy \\
                     --policy-name <NEW POLICY NAME> \\
-                    --policy-document file://awsome-distributed-training/architectures/sagemaker-hyperpod-slurm/1.AmazonSageMakerClustersExecutionRolePolicy.json${NC}"
+                    --policy-document file://awsome-distributed-ai/architectures/sagemaker-hyperpod-slurm/1.AmazonSageMakerClustersExecutionRolePolicy.json${NC}"
 
                 echo -e "\n${YELLOW} Attach an IAM policy to an IAM role (required for options 1 & 2 above)${NC}"
                 echo -e "\n${BLUE}         aws iam attach-role-policy \\
@@ -287,7 +287,7 @@ multi_headnode() {
 # Function to setup environment variables
 setup_env_vars() {
     echo -e "${BLUE}=== Setting Up Environment Variables ===${NC}"
-    echo -e "${GREEN}Cloning awsome-distributed-training${NC}"
+    echo -e "${GREEN}Cloning awsome-distributed-ai${NC}"
     clone_adt
 
     echo -e "${BLUE}Enter the name of the SageMaker VPC CloudFormation stack that was deployed as a prerequisite (default: sagemaker-hyperpod):${NC}"
@@ -306,7 +306,7 @@ setup_env_vars() {
     echo -e "${YELLOW}Generating new environment variables...${NC}"
     
     generate_env_vars() {
-        bash awsome-distributed-training/architectures/sagemaker-hyperpod-slurm/create_config.sh
+        bash awsome-distributed-ai/architectures/sagemaker-hyperpod-slurm/create_config.sh
         # bash create_config.sh
     }
 
@@ -345,7 +345,7 @@ setup_env_vars() {
 setup_lifecycle_scripts() {
     echo -e "${BLUE}=== Setting Up Lifecycle Scripts ===${NC}"
 
-    cd awsome-distributed-training/architectures/sagemaker-hyperpod-slurm/LifecycleScripts/
+    cd awsome-distributed-ai/architectures/sagemaker-hyperpod-slurm/LifecycleScripts/
 
     # Check if FSx OpenZFS was deployed in the stack
     echo -e "${BLUE}Checking if FSx OpenZFS was deployed in the stack...${NC}"
@@ -873,7 +873,7 @@ validate_cluster_config() {
     echo "Validating your cluster configuration..."
     # TODO: MAKE SURE PACKAGES ARE INSTALLED HERE!!
 
-    curl -O https://raw.githubusercontent.com/awslabs/awsome-distributed-training/main/architectures/sagemaker-hyperpod-slurm/validate-config.py
+    curl -O https://raw.githubusercontent.com/awslabs/awsome-distributed-ai/main/architectures/sagemaker-hyperpod-slurm/validate-config.py
 
     # check config for known issues
     python3 validate-config.py --cluster-config cluster-config.json --provisioning-parameters provisioning_parameters.json --region $AWS_REGION
