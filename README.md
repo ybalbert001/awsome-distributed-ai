@@ -71,7 +71,7 @@ examples/
 │           ├── README.md
 │           ├── slurm/          # Slurm-specific launch scripts
 │           └── kubernetes/     # Kubernetes manifests
-├── inference/                  # framework-centric inference engines (placeholder)
+├── inference/                  # framework-centric inference engines (vllm, …)
 └── use-cases/                  # use-case-centric end-to-end demos
     └── <name>/                 # e.g. detr-finetune, esm2-hyperpod
 ```

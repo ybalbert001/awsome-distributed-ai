@@ -146,7 +146,7 @@ dsv3-uccl-nixl/
 ### 1. Configure environment
 
 ```bash
-cd 3.test_cases/pytorch/vllm/dsv3-uccl-nixl
+cd examples/inference/vllm/dsv3-uccl-nixl
 cp setup/env_vars.example setup/env_vars
 $EDITOR setup/env_vars              # replace every REPLACE_ME placeholder
 grep REPLACE_ME setup/env_vars      # should print nothing when fully filled
