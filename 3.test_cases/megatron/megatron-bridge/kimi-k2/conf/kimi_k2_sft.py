@@ -97,7 +97,9 @@ def kimi_k2_sft_config() -> ConfigContainer:
         CP=1.
     Memory sanity: ~16 B/param (BF16 weights+grads + FP32 Adam moments, distributed
     optimizer) x 1.04T / 256 ~= 65 GB/GPU of sharded model state, leaving headroom on
-    288 GB B300 HBM for activations with full recompute.
+    288 GB B300 HBM for activations. Activations use full recompute when
+    MOE_A2A_OVERLAP=off; overlap=on requires recompute OFF + VPP=2 on core 0.17.1
+    (higher activation memory — exercised empirically by the kimi-k2 benchmark cells).
     """
     # Base SFT template: lower LR (5e-6), cosine schedule, bf16_mixed, packed sequences,
     # SQuAD default dataset (overridden below), torch_dist checkpoints, seed 5678.
@@ -142,16 +144,16 @@ def kimi_k2_sft_config() -> ConfigContainer:
     cfg.model.expert_tensor_parallel_size = 1
     cfg.model.context_parallel_size = 1
     cfg.model.sequence_parallel = True                # required with TP>1 for MoE/MLA
-    cfg.model.virtual_pipeline_model_parallel_size = None
     cfg.model.pipeline_dtype = torch.bfloat16
-    # Kimi K2 has ~61 transformer layers which do NOT divide evenly across PP=8.
-    # TODO(validate against image): set an explicit pipeline layout for the uneven
-    # split. The DeepSeek-V3 recipe uses
-    # set_deepseek_v3_pipeline_model_parallel_layout(cfg.model, layout=...) /
-    # cfg.model.pipeline_model_parallel_layout; pick a layout that balances the 61
-    # layers (+ any MTP layer) over 8 stages. Leaving as None will error on an uneven
-    # layer count. src/megatron/bridge/recipes/deepseek/deepseek_v3.py
-    cfg.model.pipeline_model_parallel_layout = None
+    # Kimi K2 ships NO multi-token-prediction layer (HF num_nextn_predict_layers=0; the
+    # AutoBridge provider carries mtp_num_layers=0). Set it explicitly anyway: the DSV3
+    # pipeline-layout helper used below defaults an ABSENT attr to 1 (adds an "mtp" stage),
+    # which would corrupt the layout for Kimi K2.
+    cfg.model.mtp_num_layers = 0
+    # NOTE: virtual_pipeline_model_parallel_size and the explicit 61-layer pipeline layout
+    # are finalized in the "Recompute + VPP + pipeline layout" section below — on
+    # Megatron-Core 0.17.1, overlap=on requires VPP + recompute OFF, and the layout
+    # depends on (PP, VPP), so the three are set together.
 
     # -- MoE token dispatcher: A/B toggle (see ../../dsv3/) --------------------
     # MOE_DISPATCHER selects the expert-parallel all-to-all backend so the benchmark
@@ -205,11 +207,17 @@ def kimi_k2_sft_config() -> ConfigContainer:
     # Megatron 1F1B hides up to ~93% of A2A) -> report as the deployment delta. "off"
     # exposes the A2A fully (dispatcher-isolation upper bound). See ../../dsv3/README.md.
     moe_a2a_overlap = os.environ.get("MOE_A2A_OVERLAP", "on").lower() == "on"
-    # TODO(validate against image): confirm these MCore TransformerConfig field names map to
-    # the --overlap-moe-expert-parallel-comm / --delay-wgrad-compute CLI flags on the image.
-    for _ovl_field in ("overlap_moe_expert_parallel_comm", "delay_wgrad_compute"):
-        if hasattr(cfg.model, _ovl_field):
-            setattr(cfg.model, _ovl_field, moe_a2a_overlap)
+    # Validated on the image (core 0.17.1, 256x B300 A/B): set the flag on whichever config
+    # object exposes it — the model config is what the validator reads; comm_overlap mirrors
+    # it. delay_wgrad_compute is held OFF to minimise the constraint surface; enabling it is
+    # an unvalidated follow-up (see ../../dsv3/RESULTS.md).
+    for _obj in (getattr(cfg, "comm_overlap", None), cfg.model):
+        if _obj is None:
+            continue
+        if hasattr(_obj, "overlap_moe_expert_parallel_comm"):
+            _obj.overlap_moe_expert_parallel_comm = moe_a2a_overlap
+        if hasattr(_obj, "delay_wgrad_compute"):
+            _obj.delay_wgrad_compute = False
 
     # -- Precision / optimizer ----------------------------------------------
     cfg.mixed_precision = "bf16_mixed"
@@ -227,11 +235,40 @@ def kimi_k2_sft_config() -> ConfigContainer:
     cfg.optimizer.exp_avg_sq_dtype = torch.float32
     cfg.optimizer.adam_beta2 = 0.98
 
-    # -- Full activation recompute (memory) ---------------------------------
-    cfg.model.recompute_granularity = "full"
-    cfg.model.recompute_method = "uniform"
-    cfg.model.recompute_num_layers = 1
-    cfg.model.recompute_modules = None
+    # -- Recompute + VPP + pipeline layout (coupled; validated on core 0.17.1) ----
+    # overlap=on hard-requires a virtual pipeline (when PP>1) AND recompute fully OFF;
+    # the 61-layer pipeline layout depends on (PP, VPP). Finalize all three together,
+    # mirroring the validated benchmark entrypoint (../benchmarks/bench_kimi_k2_pretrain.py).
+    if moe_a2a_overlap and PIPELINE_PARALLEL > 1:
+        cfg.model.virtual_pipeline_model_parallel_size = 2   # recipe's (8,2) 16-chunk layout
+        cfg.model.recompute_granularity = None
+        cfg.model.recompute_method = None
+        cfg.model.recompute_num_layers = None
+        cfg.model.recompute_modules = None
+    else:
+        cfg.model.virtual_pipeline_model_parallel_size = None
+        cfg.model.recompute_granularity = "full"             # fit activation memory at scale
+        cfg.model.recompute_method = "uniform"
+        cfg.model.recompute_num_layers = 1
+        cfg.model.recompute_modules = None
+    # Kimi K2's 61 layers do NOT divide evenly over PP=8 — an explicit layout is REQUIRED
+    # (None errors at model build). Reuse the DSV3 recipe helper: it is MTP-aware (mtp=0 set
+    # above -> last stage ["loss"], no "mtp") and ships layouts for (pp,vpp) in
+    # {(4,1),(8,1),(16,1),(4,2),(8,2),(4,4)}. Validated on the image (Bridge 0.4.2) by the
+    # kimi-k2 config-assembly gate.
+    from megatron.bridge.recipes.deepseek.deepseek_v3 import (
+        set_deepseek_v3_pipeline_model_parallel_layout,
+    )
+    set_deepseek_v3_pipeline_model_parallel_layout(cfg.model)
+    if (cfg.model.pipeline_model_parallel_size > 1
+            and cfg.model.pipeline_model_parallel_layout is None):
+        raise ValueError(
+            "no shipped 61-layer pipeline layout for (pp=%s, vpp=%s); use PP in {4,8,16} "
+            "(see megatron.bridge.recipes.deepseek.deepseek_v3."
+            "set_deepseek_v3_pipeline_model_parallel_layout)"
+            % (cfg.model.pipeline_model_parallel_size,
+               cfg.model.virtual_pipeline_model_parallel_size or 1)
+        )
     cfg.model.transformer_impl = "transformer_engine"
     cfg.model.cuda_graph_impl = "none"  # CUDA graphs + EP all-to-all do not mix well
 
