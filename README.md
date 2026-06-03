@@ -86,11 +86,11 @@ Utility scripts and tools for validating your environment and monitoring trainin
 
 | Name                                                                                            | Comments                                                        |
 | ----------------------------------------------------------------------------------------------- | --------------------------------------------------------------- |
-| [`1.pytorch-env-validation`](./validation_and_observability/1.pytorch-env-validation)         | Validates your PyTorch environment                              |
-| [`2.gpu-cluster-healthcheck`](./validation_and_observability/2.gpu-cluster-healthcheck)       | GPU cluster health checks                                       |
-| [`3.efa-node-exporter`](./validation_and_observability/3.efa-node-exporter)                   | Node exporter with Amazon EFA monitoring modules                |
-| [`4.prometheus-grafana`](./validation_and_observability/4.prometheus-grafana)                  | Monitoring for SageMaker HyperPod and EKS GPU clusters          |
-| [`5.nsight`](./validation_and_observability/5.nsight)                                         | Shows how to run Nvidia Nsight Systems to profile your workload |
+| [`pytorch-env-validation`](./validation_and_observability/pytorch-env-validation)         | Validates your PyTorch environment                              |
+| [`gpu-cluster-healthcheck`](./validation_and_observability/gpu-cluster-healthcheck)       | GPU cluster health checks                                       |
+| [`efa-node-exporter`](./validation_and_observability/efa-node-exporter)                   | Node exporter with Amazon EFA monitoring modules                |
+| [`prometheus-grafana`](./validation_and_observability/prometheus-grafana)                  | Monitoring for SageMaker HyperPod and EKS GPU clusters          |
+| [`nsight`](./validation_and_observability/nsight)                                         | Shows how to run Nvidia Nsight Systems to profile your workload |
 
 ## 5. Micro-benchmarks
 

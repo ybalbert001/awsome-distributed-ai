@@ -28,7 +28,7 @@ Slurm-native integration for the GPU cluster health check suite, including prolo
 Add to `slurm.conf`:
 
 ```conf
-Prolog=/path/to/2.gpu-cluster-healthcheck/slurm/prolog-gpu-healthcheck.sh
+Prolog=/path/to/gpu-cluster-healthcheck/slurm/prolog-gpu-healthcheck.sh
 PrologTimeout=900   # 15 minutes
 ```
 
