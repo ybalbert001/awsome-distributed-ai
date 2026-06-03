@@ -3,8 +3,10 @@
 # SPDX-License-Identifier: MIT-0
 """Parse a megatron-bridge-bench campaign tree into a per-run loss curve + a summary index.
 
-Walks ``<campaign>/<model>/<arm>-mb<m>-ovl<on|off>/logs/rank-0.log`` (the last-PP-stage rank
-that prints Megatron's per-iteration training line) and, for each run, emits:
+Walks ``<campaign>/<model>/<arm>-mb<m>-ovl<on|off>/logs/`` and, for each run, parses the
+HIGHEST-numbered ``rank-<r>.log`` (the last PP stage is where Megatron prints the
+per-iteration training line: ``iteration N/M | elapsed time per iteration (ms) | lm loss |
+throughput per GPU (TFLOP/s/GPU)``) plus ``rank-0.log`` for the EFA/UCCL init signals, and emits:
 
   - ``<run_dir>/loss_curve.csv``  : iter, lm_loss, iter_time_s   (the loss-equivalence source)
   - one row appended to ``<campaign>/index.csv``                : perf + validity summary
@@ -38,17 +40,31 @@ RE_UCCL = re.compile(r"Registered proxies|high-throughput mode")
 
 
 def parse_run(run_dir, warmup, debug=False):
-    log = os.path.join(run_dir, "logs", "rank-0.log")
-    if not os.path.isfile(log):
+    # Megatron prints the per-iteration training line (lm loss / elapsed time / TFLOP) on
+    # the LAST rank (last PP stage) — i.e. the HIGHEST-numbered node log. rank-0.log only
+    # carries the Bridge "Step Time" logger plus the EFA/UCCL init lines. Verified against
+    # the preserved 2026-06-01 logs (abrun-*-31.log has the iteration lines; rank0 does not).
+    logs = glob.glob(os.path.join(run_dir, "logs", "rank-*.log"))
+    if not logs:
         return None
+    def _rank(p):
+        try:
+            return int(os.path.basename(p).split("-")[1].split(".")[0])
+        except ValueError:
+            return -1
+    iter_log = max(logs, key=_rank)              # last node: per-iteration training lines
+    rank0_log = min(logs, key=_rank)             # first node: EFA / UCCL-proxy init signals
     iters = []  # (iter, loss, time_s, tflops, gbs)
     efa_ok = uccl_ok = False
-    with open(log, errors="replace") as f:
+    for sig_log in {rank0_log, iter_log}:
+        with open(sig_log, errors="replace") as f:
+            for line in f:
+                if RE_EFA.search(line):
+                    efa_ok = True
+                if RE_UCCL.search(line):
+                    uccl_ok = True
+    with open(iter_log, errors="replace") as f:
         for line in f:
-            if RE_EFA.search(line):
-                efa_ok = True
-            if RE_UCCL.search(line):
-                uccl_ok = True
             mi = RE_ITER.search(line)
             mt = RE_TIME_MS.search(line)
             ml = RE_LOSS.search(line)
@@ -60,7 +76,7 @@ def parse_run(run_dir, warmup, debug=False):
                 gbs = int(RE_GBS.search(line).group(1)) if RE_GBS.search(line) else 0
                 iters.append((it, loss, t, tf, gbs))
                 if debug and len(iters) <= 3:
-                    sys.stderr.write("  [debug] %s\n" % (iters[-1],))
+                    sys.stderr.write("  [debug] %s %s\n" % (os.path.basename(iter_log), iters[-1]))
 
     # write the loss curve (all iters, no drop — the curve IS the equivalence evidence)
     with open(os.path.join(run_dir, "loss_curve.csv"), "w", newline="") as fh:
@@ -120,8 +136,8 @@ def main():
     campaign = args[0].rstrip("/")
 
     rows = []
-    for log in sorted(glob.glob(os.path.join(campaign, "*", "*", "logs", "rank-0.log"))):
-        run_dir = os.path.dirname(os.path.dirname(log))
+    for logdir in sorted(glob.glob(os.path.join(campaign, "*", "*", "logs"))):
+        run_dir = os.path.dirname(logdir)
         model = os.path.basename(os.path.dirname(run_dir))
         tag = os.path.basename(run_dir)  # arm-mb<m>-ovl<on|off>
         s = parse_run(run_dir, warmup, debug)
