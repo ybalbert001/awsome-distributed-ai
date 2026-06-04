@@ -99,9 +99,12 @@ def build_config():
         m.cuda_graph_impl = "none"          # CUDA graphs + EP all-to-all do not mix well
     m.moe_grouped_gemm = True
     m.moe_permute_fusion = True
-    # Kimi-K2 has NO multi-token-prediction layer (DSV3 ships MTP=1). Force mtp=0 so the layout
-    # function below ends the 61-layer split in ["loss"], not ["mtp","loss"].
-    m.mtp_num_layers = 0
+    # Kimi-K2 has NO multi-token-prediction layer (DSV3 ships MTP=1). Use None — NOT 0:
+    # the layout helper treats None as no-MTP (`None or 0` -> ["loss"] tail), and core's
+    # comm-overlap setup asserts `mtp_num_layers is None or == 1` when
+    # overlap_moe_expert_parallel_comm is enabled — an int 0 trips that assert
+    # ("MTP layernum only supports 1 when enabling overlap_moe_expert_parallel_comm").
+    m.mtp_num_layers = None
     for f in ("account_for_embedding_in_pipeline_split", "account_for_loss_in_pipeline_split"):
         if hasattr(m, f):
             setattr(m, f, False)

@@ -145,11 +145,12 @@ def kimi_k2_sft_config() -> ConfigContainer:
     cfg.model.context_parallel_size = 1
     cfg.model.sequence_parallel = True                # required with TP>1 for MoE/MLA
     cfg.model.pipeline_dtype = torch.bfloat16
-    # Kimi K2 ships NO multi-token-prediction layer (HF num_nextn_predict_layers=0; the
-    # AutoBridge provider carries mtp_num_layers=0). Set it explicitly anyway: the DSV3
-    # pipeline-layout helper used below defaults an ABSENT attr to 1 (adds an "mtp" stage),
-    # which would corrupt the layout for Kimi K2.
-    cfg.model.mtp_num_layers = 0
+    # Kimi K2 ships NO multi-token-prediction layer (HF num_nextn_predict_layers=0). Set it
+    # explicitly to None — NOT 0: the DSV3 pipeline-layout helper treats None as no-MTP
+    # (`None or 0` -> ["loss"] tail; an ABSENT attr would default to 1 and corrupt the
+    # layout), and core's comm-overlap setup asserts `mtp_num_layers is None or == 1` when
+    # overlap_moe_expert_parallel_comm is enabled — an int 0 trips that assert.
+    cfg.model.mtp_num_layers = None
     # NOTE: virtual_pipeline_model_parallel_size and the explicit 61-layer pipeline layout
     # are finalized in the "Recompute + VPP + pipeline layout" section below — on
     # Megatron-Core 0.17.1, overlap=on requires VPP + recompute OFF, and the layout
