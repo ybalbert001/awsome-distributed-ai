@@ -1,4 +1,4 @@
-FROM lmsysorg/sglang:dev-cu13
+FROM lmsysorg/sglang:v0.5.12.post1-cu130
 
 ARG EFA_VERSION=1.47.0
 

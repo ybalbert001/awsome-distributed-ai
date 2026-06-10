@@ -1,6 +1,6 @@
 
 algorithm_name=sgl-dev-cu13
-dockerfilename=dockerfile
+dockerfilename=Dockerfile
 
 export DOCKER_BUILDKIT=1
 
