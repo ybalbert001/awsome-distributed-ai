@@ -27,7 +27,7 @@ spec:
         prometheus.io/port: "9400"
         prometheus.io/path: "/metrics"
     spec:
-      # 仅调度到有 GPU 的节点
+      # only schedule onto GPU nodes
       nodeSelector:
         nvidia.com/gpu.present: "true"
       tolerations:

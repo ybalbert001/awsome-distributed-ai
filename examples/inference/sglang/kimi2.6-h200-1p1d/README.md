@@ -16,10 +16,11 @@ Prometheus-agent → Amazon Managed Prometheus monitoring is included.
 |---|---|
 | [`Dockerfile`](./Dockerfile) | `lmsysorg/sglang:dev-cu13` + AWS EFA installer |
 | [`build-image.sh`](./build-image.sh) | build and push to ECR |
-| [`kimi-pd-deploy.yaml`](./kimi-pd-deploy.yaml) | prefill + decode StatefulSets, router, AMP monitoring |
+| [`kimi-pd-deploy.yaml`](./kimi-pd-deploy.yaml) | prefill + decode StatefulSets, router |
 
-Model pre-staging and GPU metrics use the shared helpers one level up
-([`../download-model.sh`](..), [`../dcgm-exporter-daemonset.yaml`](..)).
+Model pre-staging, GPU metrics, and AMP remote-write use the shared helpers one
+level up ([`../download-model.sh`](..), [`../dcgm-exporter-daemonset.yaml`](..),
+[`../prometheus-agent-amp.yaml`](..)).
 
 ## Deploy
 
@@ -30,7 +31,8 @@ Model pre-staging and GPU metrics use the shared helpers one level up
 ../download-model.sh moonshotai/Kimi-K2.5 ml.p5en.48xlarge   # wait for "Download complete!"
 
 kubectl apply -f kimi-pd-deploy.yaml
-kubectl apply -f ../dcgm-exporter-daemonset.yaml   # optional monitoring
+kubectl apply -f ../dcgm-exporter-daemonset.yaml   # optional: GPU metrics
+kubectl apply -f ../prometheus-agent-amp.yaml      # optional: remote-write to AMP
 ```
 
 The router exposes an OpenAI-compatible endpoint on `sglang-router:30000`
@@ -51,9 +53,10 @@ environment-specific — fill them in:
 - **`<YOUR_ECR_IMAGE>`** (both StatefulSets) — the URI `build-image.sh` printed.
 - **Model path** — `--model-path /nvme/moonshotai-Kimi-K2.5` and the
   `download-model-daemonset.yaml` `repo_id` (set to the real Kimi2.6 HF id).
-- **Monitoring (optional)** — `<YOUR_AMP_INGEST_ROLE_ARN>`,
-  `<YOUR_AMP_WORKSPACE_ID>`, and `<region>` in the Prometheus-agent block.
-  Delete that block entirely if you don't use AMP.
+- **Monitoring (optional)** — monitoring lives in the shared
+  [`../prometheus-agent-amp.yaml`](..); fill in `<YOUR_AMP_INGEST_ROLE_ARN>`,
+  `<YOUR_AMP_WORKSPACE_ID>`, and `<region>` there. Skip applying it if you don't
+  use AMP.
 
 Per-engine SGLang flags (`tp-size 8`, `ep-size 8`, `mem-fraction-static 0.92`,
 hierarchical cache, parsers) live inline in the StatefulSet `command:` blocks.

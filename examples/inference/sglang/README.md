@@ -34,11 +34,66 @@ applies it — `LOCAL_DIR_NAME` defaults to the repo id with `/` → `-`:
 # then:  kubectl delete daemonset model-downloader
 ```
 
-### GPU metrics
+### Monitoring (Prometheus + Grafana)
 
-[`dcgm-exporter-daemonset.yaml`](./dcgm-exporter-daemonset.yaml) runs a DCGM
-exporter DaemonSet on `:9400` for Prometheus. Generic — apply as-is:
+The serving pods already expose SGLang metrics on `:30000/metrics` (started with
+`--enable-metrics`) and carry the `sglang-metrics=true` label plus the
+`prometheus.io/*` scrape annotations. The monitoring path is fully AWS-managed:
+an in-cluster Prometheus **agent** remote-writes to **Amazon Managed Prometheus
+(AMP)**, and **Amazon Managed Grafana** reads from AMP — there is no in-cluster
+Grafana.
+
+**1. AMP + Prometheus agent (scripted)** —
+[`setup-amp-monitoring.sh`](./setup-amp-monitoring.sh) is idempotent and does the
+three one-time steps in order: create (or reuse) an AMP workspace, enable the
+cluster OIDC provider and create the AMP ingest IAM role bound to the
+`amp-iamproxy-ingest-service-account` ServiceAccount, then render
+[`prometheus-agent-amp.yaml`](./prometheus-agent-amp.yaml) with the real
+workspace id / role ARN / region and apply it.
+
+```bash
+./setup-amp-monitoring.sh <CLUSTER_NAME> [REGION] [AMP_ALIAS]
+# e.g. ./setup-amp-monitoring.sh eks-hypd-0512-b2ad us-west-2 sglang-kimi
+# then watch the agent leave CrashLoopBackOff:
+#   kubectl rollout status deployment/prometheus-agent
+```
+
+The agent scrapes every pod labeled `sglang-metrics=true` or `dcgm-metrics=true`
+and remote-writes via SigV4. (Requires `awscli`, `eksctl`, `kubectl`, `envsubst`
+and AWS creds with AMP + IAM permissions.)
+
+**2. GPU metrics** — [`dcgm-exporter-daemonset.yaml`](./dcgm-exporter-daemonset.yaml)
+runs a DCGM exporter DaemonSet on `:9400` (labeled `dcgm-metrics=true`, so the
+agent above picks it up automatically). Apply it:
 
 ```bash
 kubectl apply -f dcgm-exporter-daemonset.yaml
 ```
+
+The manifest schedules onto nodes labeled `nvidia.com/gpu.present=true`. This
+label is **not** present by default on SageMaker HyperPod nodes — it is the
+NVIDIA GPU Operator convention, and HyperPod doesn't run the Operator. So on a
+plain HyperPod cluster the DaemonSet comes up with `DESIRED 0` and never starts
+a pod. Two ways to fix it:
+
+- **Quick:** label the GPU nodes by hand —
+  `kubectl label nodes <node>... nvidia.com/gpu.present=true`. Simple, but the
+  label does **not** survive node replacement: if HyperPod swaps a node, the new
+  one won't carry it and no DCGM pod will schedule there until you re-label.
+- **Durable:** install the NVIDIA GPU Operator / device-plugin, which labels GPU
+  nodes automatically (and can manage DCGM itself).
+
+Verify the pods landed (one per GPU node) before checking Grafana:
+
+```bash
+kubectl get ds dcgm-exporter            # DESIRED should match your GPU node count
+kubectl get pods -l app=dcgm-exporter -o wide
+```
+
+**3. Amazon Managed Grafana** — create an Amazon Managed Grafana workspace
+(console or `aws grafana create-workspace`) with the **Amazon Managed Service for
+Prometheus** data-source / IAM permission enabled. In the workspace, add a
+Prometheus data source pointing at the AMP query endpoint
+(`https://aps-workspaces.<region>.amazonaws.com/workspaces/<workspace-id>/`) with
+**SigV4 auth** turned on, then import an SGLang or DCGM dashboard. The script
+prints the workspace id and remote-write URL when it finishes.
