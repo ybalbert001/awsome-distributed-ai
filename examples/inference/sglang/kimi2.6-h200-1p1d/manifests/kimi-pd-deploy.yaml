@@ -101,6 +101,14 @@ spec:
                 values:
                 - p5en.48xlarge      # plain EKS managed nodegroup
                 - ml.p5en.48xlarge   # SageMaker HyperPod instance group
+      # An eksctl GPU nodegroup taints nodes nvidia.com/gpu=true:NoSchedule to
+      # keep non-GPU pods off; HyperPod nodes have no such taint. A toleration is
+      # a no-op when the taint is absent, so it's safe to always carry it.
+      tolerations:
+      - key: nvidia.com/gpu
+        operator: Equal
+        value: "true"
+        effect: NoSchedule
       containers:
       - name: sglang
         image: <YOUR_ECR_IMAGE>   # the URI build-image.sh printed, e.g. <account>.dkr.ecr.<region>.amazonaws.com/sgl-dev-cu13:<tag>
@@ -235,6 +243,14 @@ spec:
               matchLabels:
                 app: prefill
             topologyKey: kubernetes.io/hostname
+      # An eksctl GPU nodegroup taints nodes nvidia.com/gpu=true:NoSchedule to
+      # keep non-GPU pods off; HyperPod nodes have no such taint. A toleration is
+      # a no-op when the taint is absent, so it's safe to always carry it.
+      tolerations:
+      - key: nvidia.com/gpu
+        operator: Equal
+        value: "true"
+        effect: NoSchedule
       containers:
       - name: sglang
         image: <YOUR_ECR_IMAGE>   # the URI build-image.sh printed, e.g. <account>.dkr.ecr.<region>.amazonaws.com/sgl-dev-cu13:<tag>

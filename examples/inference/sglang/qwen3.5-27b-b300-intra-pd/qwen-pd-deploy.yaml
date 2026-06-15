@@ -61,6 +61,14 @@ spec:
                 values:
                 - p6-b300.48xlarge      # plain EKS managed nodegroup
                 - ml.p6-b300.48xlarge   # SageMaker HyperPod instance group
+      # An eksctl B300 nodegroup taints nodes nvidia.com/gpu=true:NoSchedule to
+      # keep non-GPU pods off; HyperPod nodes have no such taint. A toleration is
+      # a no-op when the taint is absent, so it's safe to always carry it.
+      tolerations:
+      - key: nvidia.com/gpu
+        operator: Equal
+        value: "true"
+        effect: NoSchedule
       containers:
       # ---- 6 prefill + 2 decode engines, all on one node ------------------
       - name: sglang-pd
