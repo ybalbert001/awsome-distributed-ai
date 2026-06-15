@@ -76,9 +76,9 @@ cd examples/inference/sglang/kimi2.6-h200-1p1d
 #    "Download complete!" in each downloader pod's logs)
 ../download-model.sh moonshotai/Kimi-K2.5 ml.p5en.48xlarge
 
-# 3. set <YOUR_ECR_IMAGE> in kimi-pd-deploy.yaml to the URI from step 1,
+# 3. set <YOUR_ECR_IMAGE> in manifests/kimi-pd-deploy.yaml to the URI from step 1,
 #    then deploy prefill + decode StatefulSets and the router
-kubectl apply -f kimi-pd-deploy.yaml
+kubectl apply -f manifests/kimi-pd-deploy.yaml
 
 # 4. (optional) GPU metrics + remote-write to Amazon Managed Prometheus —
 #    fill in the AMP/IAM placeholders in ../prometheus-agent-amp.yaml first
@@ -104,7 +104,7 @@ curl http://localhost:30000/v1/completions \
 |---|---|
 | [`Dockerfile`](./Dockerfile) | `lmsysorg/sglang:v0.5.12.post1-cu130` + AWS EFA installer |
 | [`build-image.sh`](./build-image.sh) | build and push to ECR |
-| [`kimi-pd-deploy.yaml`](./kimi-pd-deploy.yaml) | prefill + decode StatefulSets, router |
+| [`manifests/kimi-pd-deploy.yaml`](./manifests/kimi-pd-deploy.yaml) | prefill + decode StatefulSets, router |
 
 Model pre-staging, GPU metrics, and AMP remote-write use the shared helpers one
 level up ([`../download-model.sh`](..), [`../dcgm-exporter-daemonset.yaml`](..),

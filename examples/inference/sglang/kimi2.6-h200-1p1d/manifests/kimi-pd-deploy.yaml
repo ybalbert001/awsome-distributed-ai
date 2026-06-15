@@ -330,7 +330,7 @@ spec:
       serviceAccountName: sglang-router
       containers:
       - name: router
-        image: lmsysorg/sgl-model-gateway:latest
+        image: lmsysorg/sgl-model-gateway:v0.3.2
         ports:
         - containerPort: 30000
           name: http
