@@ -123,6 +123,17 @@ spec:
         resources:
           limits:
             nvidia.com/gpu: 8
+        # /health returns 200 once the API server is up, but the engine can still
+        # wedge on a stuck CUDA-graph capture. Restart after 5 consecutive misses;
+        # the 1800s initial delay clears the cold start (weight download + DeepGEMM
+        # JIT + CUDA-graph capture) so liveness never fires during warmup.
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 30000
+          initialDelaySeconds: 1800
+          periodSeconds: 60
+          failureThreshold: 5
         readinessProbe:
           httpGet:
             path: /health

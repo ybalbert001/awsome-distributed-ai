@@ -118,6 +118,13 @@ spec:
         env:
         - name: NCCL_DEBUG
           value: INFO
+        # Exclude loopback from NCCL's OOB socket interface pick. Intra-node TP/EP
+        # rides NVLink and the cross-node KV hop uses NIXL (not NCCL), so this is
+        # bootstrap hygiene only: it keeps NCCL's control rendezvous off lo.
+        # Use the exclusion form (^lo), never a positive name like eth0, which
+        # breaks across AMIs/CNIs.
+        - name: NCCL_SOCKET_IFNAME
+          value: ^lo
         - name: FI_PROVIDER
           value: efa
         - name: FI_EFA_USE_DEVICE_RDMA
@@ -169,6 +176,18 @@ spec:
             vpc.amazonaws.com/efa: 16
             memory: "1900Gi"
             cpu: "180"
+        # /health returns 200 once the API server is up, but the engine can still
+        # wedge on a stuck CUDA-graph capture or NIXL transfer. Restart after 5
+        # consecutive misses; the 1800s initial delay clears the 6-8 min cold
+        # start (shard load + CUDA-graph capture) so liveness never fires during
+        # warmup.
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 30000
+          initialDelaySeconds: 1800
+          periodSeconds: 60
+          failureThreshold: 5
         readinessProbe:
           httpGet:
             path: /health
@@ -260,6 +279,13 @@ spec:
         env:
         - name: NCCL_DEBUG
           value: INFO
+        # Exclude loopback from NCCL's OOB socket interface pick. Intra-node TP/EP
+        # rides NVLink and the cross-node KV hop uses NIXL (not NCCL), so this is
+        # bootstrap hygiene only: it keeps NCCL's control rendezvous off lo.
+        # Use the exclusion form (^lo), never a positive name like eth0, which
+        # breaks across AMIs/CNIs.
+        - name: NCCL_SOCKET_IFNAME
+          value: ^lo
         - name: FI_PROVIDER
           value: efa
         - name: FI_EFA_USE_DEVICE_RDMA
@@ -310,6 +336,18 @@ spec:
             vpc.amazonaws.com/efa: 16
             memory: "1900Gi"
             cpu: "180"
+        # /health returns 200 once the API server is up, but the engine can still
+        # wedge on a stuck CUDA-graph capture or NIXL transfer. Restart after 5
+        # consecutive misses; the 1800s initial delay clears the 6-8 min cold
+        # start (shard load + CUDA-graph capture) so liveness never fires during
+        # warmup.
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 30000
+          initialDelaySeconds: 1800
+          periodSeconds: 60
+          failureThreshold: 5
         readinessProbe:
           httpGet:
             path: /health
@@ -413,6 +451,15 @@ spec:
           limits:
             cpu: "4"
             memory: 8Gi
+        # Liveness is a bare TCP check, not /readiness: the router reports
+        # not-ready whenever its backends are down, and we must not restart the
+        # router for that — only when its own process has wedged.
+        livenessProbe:
+          tcpSocket:
+            port: 30000
+          initialDelaySeconds: 30
+          periodSeconds: 30
+          failureThreshold: 5
         readinessProbe:
           httpGet:
             path: /readiness

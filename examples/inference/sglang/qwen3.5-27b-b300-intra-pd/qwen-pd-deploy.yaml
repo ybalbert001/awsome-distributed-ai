@@ -94,6 +94,17 @@ spec:
         resources:
           limits:
             nvidia.com/gpu: 8
+        # Probe the foreground prefill (30005) — it keeps the container alive, so
+        # if it wedges the pod should restart. The 1800s initial delay clears the
+        # long cold start (8 engines load + CUDA-graph capture, gated behind the
+        # decode-ready wait loop) so liveness never fires during warmup.
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 30005
+          initialDelaySeconds: 1800
+          periodSeconds: 60
+          failureThreshold: 5
         readinessProbe:
           httpGet:
             path: /health
@@ -204,6 +215,15 @@ spec:
           limits:
             cpu: "4"
             memory: 8Gi
+        # Liveness is a bare TCP check, not /readiness: the router reports
+        # not-ready whenever its backends are down, and we must not restart the
+        # router for that — only when its own process has wedged.
+        livenessProbe:
+          tcpSocket:
+            port: 30080
+          initialDelaySeconds: 30
+          periodSeconds: 30
+          failureThreshold: 5
         readinessProbe:
           httpGet:
             path: /readiness
