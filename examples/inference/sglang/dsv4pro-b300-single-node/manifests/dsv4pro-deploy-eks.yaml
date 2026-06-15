@@ -1,12 +1,29 @@
 # Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 # SPDX-License-Identifier: MIT-0
 #
-# DeepSeek V4 Pro unified (non-PD) serving on a single 8-GPU B300 node
-# (EKS / HyperPod). One SGLang engine spans all 8 GPUs (tp=8, dp=8,
-# --enable-dp-attention, MXFP4 MoE, EAGLE speculative decoding) on the
-# OpenAI-compatible endpoint :30000.
+# DeepSeek V4 Pro unified (non-PD) serving on a single 8-GPU B300 node.
+# One SGLang engine spans all 8 GPUs (tp=8, dp=8, --enable-dp-attention,
+# MXFP4 MoE, EAGLE speculative decoding) on the OpenAI-compatible endpoint :30000.
 #
-#   kubectl apply -f dsv4pro-deploy.yaml
+# Plain-EKS variant of dsv4pro-deploy-hyperpod.yaml — for a self-managed
+# (eksctl) EKS cluster, NOT a SageMaker HyperPod-on-EKS cluster.
+#
+#   kubectl apply -f dsv4pro-deploy-eks.yaml
+#
+# --- Changes vs dsv4pro-deploy-hyperpod.yaml (adapted to this eksctl-managed
+#     B300 spot nodegroup `b300-spot` on cluster eks-hypd-0512-b2ad) ---
+# 1. nodeSelector: was `node.kubernetes.io/instance-type: ml.p6-b300.48xlarge`
+#    (SageMaker-style name). This node's real label is `p6-b300.48xlarge`
+#    (no `ml.` prefix), so target our own GPU label `nvidia.com/gpu.product: B300`
+#    instead — stable across instance-type renames.
+# 2. tolerations: the node carries taint `nvidia.com/gpu=true:NoSchedule`
+#    (from the nodegroup config); without a matching toleration the pod stays
+#    Pending. Added.
+# 3. hostPath: `/opt/dlami/nvme/...` does not exist on the EKS AL2023 GPU AMI
+#    (that path is DLAMI-specific). Repointed to `/mnt/k8s-disks/0/...`, the
+#    8x3.7TB instance-store RAID0 (28TB) provisioned via `setup-local-disks raid0`.
+#    NOTE: instance-store data is LOST when this spot node is reclaimed; weights
+#    must be re-downloaded on a replacement node.
 ---
 apiVersion: v1
 kind: Service
@@ -45,7 +62,12 @@ spec:
         prometheus.io/path: "/metrics"
     spec:
       nodeSelector:
-        node.kubernetes.io/instance-type: ml.p6-b300.48xlarge
+        nvidia.com/gpu.product: B300
+      tolerations:
+      - key: nvidia.com/gpu
+        operator: Equal
+        value: "true"
+        effect: NoSchedule
       containers:
       - name: sglang
         image: lmsysorg/sglang:deepseek-v4-b300
@@ -145,9 +167,9 @@ spec:
           sizeLimit: 32Gi
       - name: nvme-hf
         hostPath:
-          path: /opt/dlami/nvme/huggingface
+          path: /mnt/k8s-disks/0/huggingface
           type: DirectoryOrCreate
       - name: nvme-tmp
         hostPath:
-          path: /opt/dlami/nvme/tmp
+          path: /mnt/k8s-disks/0/tmp
           type: DirectoryOrCreate

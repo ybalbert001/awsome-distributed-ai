@@ -3,20 +3,42 @@ Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
 SPDX-License-Identifier: MIT-0
 -->
 
-# DeepSeek V4 Pro — Unified on B300 (EKS / HyperPod)
+# DeepSeek V4 Pro — Unified on B300 (HyperPod-on-EKS or self-managed EKS)
 
 Single-node, non-disaggregated SGLang serving of **DeepSeek V4 Pro** on one
 B300 node. One engine spans all 8 GPUs (`tp=8, dp=8, --enable-dp-attention`,
 MXFP4 MoE, EAGLE speculative decoding).
 
+## Prerequisite — provision the B300 node
+
+On a **self-managed (eksctl) EKS** cluster, create the B300 spot nodegroup first
+(labels, taint, and NVMe RAID0 auto-mount) — see
+[**NODEGROUP-EKS.md**](./NODEGROUP-EKS.md) and
+[`manifests/nodegroup-b300-eks.yaml`](./manifests/nodegroup-b300-eks.yaml). On
+**HyperPod-on-EKS**, nodes are already provisioned — skip straight to Deploy.
+
 ## Deploy
 
+Pick the manifest that matches your cluster:
+
+| Manifest | Use on | Node selector | NVMe mount |
+|---|---|---|---|
+| [`manifests/dsv4pro-deploy-hyperpod.yaml`](./manifests/dsv4pro-deploy-hyperpod.yaml) | SageMaker **HyperPod-on-EKS** | `node.kubernetes.io/instance-type: ml.p6-b300.48xlarge` | `/opt/dlami/nvme` (DLAMI) |
+| [`manifests/dsv4pro-deploy-eks.yaml`](./manifests/dsv4pro-deploy-eks.yaml) | Self-managed (**eksctl**) EKS | `nvidia.com/gpu.product: B300` + GPU taint toleration | `/mnt/k8s-disks/0` (`setup-local-disks raid0`) |
+
 ```bash
-kubectl apply -f dsv4pro-deploy.yaml
+# HyperPod-on-EKS:
+kubectl apply -f manifests/dsv4pro-deploy-hyperpod.yaml
+# OR self-managed EKS (after the Prerequisite above creates the nodegroup):
+kubectl apply -f manifests/dsv4pro-deploy-eks.yaml
+
 kubectl rollout status deploy/dsv4pro-unified
 ```
 
-Targets `ml.p6-b300.48xlarge` nodes (`nodeSelector` in the manifest).
+Both target a single 8-GPU `p6-b300.48xlarge` node (selector differs per
+manifest — see table). The EKS variant additionally tolerates the
+`nvidia.com/gpu=true:NoSchedule` taint and reads/writes weights from the
+instance-store RAID0 at `/mnt/k8s-disks/0`.
 
 OpenAI-compatible endpoint on `dsv4pro:30000` (`ClusterIP`) — port-forward to
 call it:
@@ -28,7 +50,7 @@ curl http://localhost:30000/v1/completions \
   -d '{"model": "deepseek-ai/DeepSeek-V4-Pro", "prompt": "The capital of France is", "max_tokens": 32}'
 ```
 
-Tear down with `kubectl delete -f dsv4pro-deploy.yaml`.
+Tear down with `kubectl delete -f manifests/dsv4pro-deploy-<hyperpod|eks>.yaml`.
 
 ## Benchmark
 
@@ -56,11 +78,8 @@ Reference numbers (`random`, input 2048 / output 256, `--request-rate inf`):
 Throughput keeps climbing to ~16k tok/s around concurrency 500, but TTFT
 degrades sharply past ~300 concurrent requests on a single node.
 
-All model and tuning knobs (env vars + serve flags) live inline in
-[`dsv4pro-deploy.yaml`](./dsv4pro-deploy.yaml). Weights load from the node's
-NVMe at `/opt/dlami/nvme/huggingface` — optionally pre-stage them with the
-shared [`../download-model.sh`](..):
-
-```bash
-../download-model.sh deepseek-ai/DeepSeek-V4-Pro ml.p6-b300.48xlarge
-```
+All model and tuning knobs (env vars + serve flags) live inline in both
+manifests (identical between them; they differ only in scheduling and NVMe
+mount path — see the table above). Weights are downloaded to the node's NVMe on
+first start (`/opt/dlami/nvme/huggingface` on HyperPod,
+`/mnt/k8s-disks/0/huggingface` on EKS).
