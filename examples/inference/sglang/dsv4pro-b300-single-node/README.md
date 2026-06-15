@@ -19,26 +19,34 @@ On a **self-managed (eksctl) EKS** cluster, create the B300 spot nodegroup first
 
 ## Deploy
 
-Pick the manifest that matches your cluster:
+A single manifest — [`manifests/dsv4pro-deploy.yaml`](./manifests/dsv4pro-deploy.yaml)
+— runs on **both** HyperPod-on-EKS and self-managed EKS. Scheduling is handled
+for both automatically: `nodeAffinity` matches the `p6-b300.48xlarge` instance
+type with or without the HyperPod `ml.` prefix, and the pod always tolerates the
+`nvidia.com/gpu=true:NoSchedule` taint the eksctl nodegroup applies (a no-op on
+HyperPod nodes, which don't carry it).
 
-| Manifest | Use on | Node selector | NVMe mount |
-|---|---|---|---|
-| [`manifests/dsv4pro-deploy-hyperpod.yaml`](./manifests/dsv4pro-deploy-hyperpod.yaml) | SageMaker **HyperPod-on-EKS** | `node.kubernetes.io/instance-type: ml.p6-b300.48xlarge` | `/opt/dlami/nvme` (DLAMI) |
-| [`manifests/dsv4pro-deploy-eks.yaml`](./manifests/dsv4pro-deploy-eks.yaml) | Self-managed (**eksctl**) EKS | `nvidia.com/gpu.product: B300` + GPU taint toleration | `/mnt/k8s-disks/0` (`setup-local-disks raid0`) |
+The **one** thing you must set per environment is the NVMe `hostPath` near the
+bottom of the manifest — the local disk is mounted at a different path on each
+AMI. The default is HyperPod's; for self-managed EKS edit both `hostPath.path`
+lines (the EKS value is shown inline as a comment).
+
+| Cluster | NVMe `hostPath` |
+|---|---|
+| SageMaker **HyperPod-on-EKS** | `/opt/dlami/nvme/...` (DLAMI default — no edit needed) |
+| Self-managed (**eksctl**) EKS | `/mnt/k8s-disks/0/...` (`setup-local-disks raid0`) |
+
+> ⚠️ Picking the wrong path is not a hard error: `type: DirectoryOrCreate`
+> silently creates an empty dir on the small root disk, and the 500GB+ weights
+> then fill it up.
 
 ```bash
-# HyperPod-on-EKS:
-kubectl apply -f manifests/dsv4pro-deploy-hyperpod.yaml
-# OR self-managed EKS (after the Prerequisite above creates the nodegroup):
-kubectl apply -f manifests/dsv4pro-deploy-eks.yaml
+# On self-managed EKS, first complete the Prerequisite above, then edit the two
+# NVMe hostPath lines in the manifest to /mnt/k8s-disks/0. Then:
+kubectl apply -f manifests/dsv4pro-deploy.yaml
 
 kubectl rollout status deploy/dsv4pro-unified
 ```
-
-Both target a single 8-GPU `p6-b300.48xlarge` node (selector differs per
-manifest — see table). The EKS variant additionally tolerates the
-`nvidia.com/gpu=true:NoSchedule` taint and reads/writes weights from the
-instance-store RAID0 at `/mnt/k8s-disks/0`.
 
 OpenAI-compatible endpoint on `dsv4pro:30000` (`ClusterIP`) — port-forward to
 call it:
@@ -50,7 +58,7 @@ curl http://localhost:30000/v1/completions \
   -d '{"model": "deepseek-ai/DeepSeek-V4-Pro", "prompt": "The capital of France is", "max_tokens": 32}'
 ```
 
-Tear down with `kubectl delete -f manifests/dsv4pro-deploy-<hyperpod|eks>.yaml`.
+Tear down with `kubectl delete -f manifests/dsv4pro-deploy.yaml`.
 
 ## Benchmark
 
@@ -78,8 +86,7 @@ Reference numbers (`random`, input 2048 / output 256, `--request-rate inf`):
 Throughput keeps climbing to ~16k tok/s around concurrency 500, but TTFT
 degrades sharply past ~300 concurrent requests on a single node.
 
-All model and tuning knobs (env vars + serve flags) live inline in both
-manifests (identical between them; they differ only in scheduling and NVMe
-mount path — see the table above). Weights are downloaded to the node's NVMe on
-first start (`/opt/dlami/nvme/huggingface` on HyperPod,
-`/mnt/k8s-disks/0/huggingface` on EKS).
+All model and tuning knobs (env vars + serve flags) live inline in the manifest.
+Weights are downloaded to the node's NVMe on first start
+(`/opt/dlami/nvme/huggingface` on HyperPod, `/mnt/k8s-disks/0/huggingface` on
+EKS — whichever `hostPath` you set above).

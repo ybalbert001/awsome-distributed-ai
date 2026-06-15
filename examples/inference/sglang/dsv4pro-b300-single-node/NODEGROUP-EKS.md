@@ -6,21 +6,21 @@ SPDX-License-Identifier: MIT-0
 # Prerequisite — provision the B300 node (self-managed EKS only)
 
 This is the prerequisite for deploying
-[`manifests/dsv4pro-deploy-eks.yaml`](./manifests/dsv4pro-deploy-eks.yaml)
+[`manifests/dsv4pro-deploy.yaml`](./manifests/dsv4pro-deploy.yaml)
 on a **self-managed (eksctl) EKS** cluster.
 
 > Skip this entirely on **HyperPod-on-EKS** — HyperPod provisions the nodes for
-> you. Use `dsv4pro-deploy-hyperpod.yaml` and go straight to the
-> [README Deploy section](./README.md#deploy).
+> you. Go straight to the [README Deploy section](./README.md#deploy).
 
 ## What it does
 
 [`manifests/nodegroup-b300-eks.yaml`](./manifests/nodegroup-b300-eks.yaml)
 creates the B300 spot nodegroup: a single 8-GPU `p6-b300.48xlarge` node that is
 
-- **labeled** `nvidia.com/gpu.product: B300` — what `dsv4pro-deploy-eks.yaml`'s
-  `nodeSelector` targets;
-- **tainted** `nvidia.com/gpu=true:NoSchedule` — which `dsv4pro-deploy-eks.yaml`
+- **labeled** `nvidia.com/gpu.product: B300` (used by the verify commands below;
+  `dsv4pro-deploy.yaml` itself schedules on the `p6-b300.48xlarge`
+  `node.kubernetes.io/instance-type` label, which kubelet sets automatically);
+- **tainted** `nvidia.com/gpu=true:NoSchedule` — which `dsv4pro-deploy.yaml`
   tolerates (keeps non-GPU pods off the node);
 - set up to **auto-mount its 8×3.7TB local NVMe** as a ~28TB RAID0 at
   `/mnt/k8s-disks/0` on every (re)launch, via

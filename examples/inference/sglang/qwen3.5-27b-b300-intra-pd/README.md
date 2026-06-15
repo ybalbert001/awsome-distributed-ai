@@ -19,7 +19,9 @@ kubectl apply -f qwen-pd-deploy.yaml
 kubectl rollout status deploy/qwen35-intra-pd
 ```
 
-Targets `ml.p6-b300.48xlarge` nodes (`nodeSelector` in the manifest).
+Targets a `p6-b300.48xlarge` node (`nodeAffinity` in the manifest matches both
+the bare EKS `p6-b300.48xlarge` and the HyperPod `ml.p6-b300.48xlarge`
+instance-type label).
 
 The router exposes an OpenAI-compatible endpoint on `qwen35-router:30080`
 (`ClusterIP`) — port-forward to call it:
@@ -45,3 +47,4 @@ Tear down with `kubectl delete -f qwen-pd-deploy.yaml`.
   `9000-9005` / `9010-9011`, router `30080`.
 - All knobs (model, `mem-fraction-static`, `context-length`, GPU split, NIXL
   backend) live inline in [`qwen-pd-deploy.yaml`](./qwen-pd-deploy.yaml).
+- Intra-node PD uses UCX; the EFA-detected warning is expected/benign

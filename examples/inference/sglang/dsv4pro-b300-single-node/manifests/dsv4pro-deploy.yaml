@@ -5,25 +5,17 @@
 # One SGLang engine spans all 8 GPUs (tp=8, dp=8, --enable-dp-attention,
 # MXFP4 MoE, EAGLE speculative decoding) on the OpenAI-compatible endpoint :30000.
 #
-# Plain-EKS variant of dsv4pro-deploy-hyperpod.yaml — for a self-managed
-# (eksctl) EKS cluster, NOT a SageMaker HyperPod-on-EKS cluster.
+# Runs on BOTH SageMaker HyperPod-on-EKS and self-managed (eksctl) EKS:
 #
-#   kubectl apply -f dsv4pro-deploy-eks.yaml
+#   kubectl apply -f dsv4pro-deploy.yaml
 #
-# --- Changes vs dsv4pro-deploy-hyperpod.yaml (adapted to this eksctl-managed
-#     B300 spot nodegroup `b300-spot` on cluster eks-hypd-0512-b2ad) ---
-# 1. nodeSelector: was `node.kubernetes.io/instance-type: ml.p6-b300.48xlarge`
-#    (SageMaker-style name). This node's real label is `p6-b300.48xlarge`
-#    (no `ml.` prefix), so target our own GPU label `nvidia.com/gpu.product: B300`
-#    instead — stable across instance-type renames.
-# 2. tolerations: the node carries taint `nvidia.com/gpu=true:NoSchedule`
-#    (from the nodegroup config); without a matching toleration the pod stays
-#    Pending. Added.
-# 3. hostPath: `/opt/dlami/nvme/...` does not exist on the EKS AL2023 GPU AMI
-#    (that path is DLAMI-specific). Repointed to `/mnt/k8s-disks/0/...`, the
-#    8x3.7TB instance-store RAID0 (28TB) provisioned via `setup-local-disks raid0`.
-#    NOTE: instance-store data is LOST when this spot node is reclaimed; weights
-#    must be re-downloaded on a replacement node.
+# Scheduling is handled for both cluster types automatically (see nodeAffinity +
+# tolerations below). The ONE thing you must set per environment is the NVMe
+# hostPath at the bottom of this file — see the WARNING there.
+#
+# On self-managed EKS, create the B300 nodegroup first (labels, GPU taint, NVMe
+# RAID0 auto-mount) — see NODEGROUP-EKS.md and manifests/nodegroup-b300-eks.yaml.
+# On HyperPod-on-EKS, nodes are already provisioned — just apply.
 ---
 apiVersion: v1
 kind: Service
@@ -61,8 +53,23 @@ spec:
         prometheus.io/port: "30000"
         prometheus.io/path: "/metrics"
     spec:
-      nodeSelector:
-        nvidia.com/gpu.product: B300
+      # Target a p6-b300.48xlarge on either cluster type. kubelet always sets
+      # node.kubernetes.io/instance-type; HyperPod instance groups use the
+      # SageMaker-style `ml.` prefix, a plain EKS managed nodegroup uses the
+      # bare EC2 type. A nodeSelector can't express OR, so use nodeAffinity In.
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: node.kubernetes.io/instance-type
+                operator: In
+                values:
+                - p6-b300.48xlarge      # plain EKS managed nodegroup
+                - ml.p6-b300.48xlarge   # SageMaker HyperPod instance group
+      # The eksctl B300 nodegroup taints nodes nvidia.com/gpu=true:NoSchedule to
+      # keep non-GPU pods off; HyperPod nodes have no such taint. A toleration is
+      # a no-op when the taint is absent, so it's safe to always carry it.
       tolerations:
       - key: nvidia.com/gpu
         operator: Equal
@@ -165,11 +172,20 @@ spec:
         emptyDir:
           medium: Memory
           sizeLimit: 32Gi
+      # ⚠️  SET THIS PER CLUSTER — the one thing scheduling can't auto-detect.
+      # The node's local NVMe is mounted at different paths on the two AMIs.
+      # Default below is HyperPod's DLAMI mount; for self-managed EKS swap both
+      # paths to the instance-store RAID0 (commented). Picking the WRONG path is
+      # not a hard error: type=DirectoryOrCreate will silently create an empty
+      # dir on the small root disk and the 500GB+ weights will fill it up.
+      #
+      #   HyperPod-on-EKS (DLAMI):           /opt/dlami/nvme/...
+      #   self-managed EKS (RAID0 instance): /mnt/k8s-disks/0/...   (setup-local-disks raid0)
       - name: nvme-hf
         hostPath:
-          path: /mnt/k8s-disks/0/huggingface
+          path: /opt/dlami/nvme/huggingface  #For EKS: /mnt/k8s-disks/0/huggingface
           type: DirectoryOrCreate
       - name: nvme-tmp
         hostPath:
-          path: /mnt/k8s-disks/0/tmp
+          path: /opt/dlami/nvme/tmp         #For EKS: /mnt/k8s-disks/0/tmp
           type: DirectoryOrCreate

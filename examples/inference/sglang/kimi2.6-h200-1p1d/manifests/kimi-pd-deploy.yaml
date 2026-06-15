@@ -87,12 +87,24 @@ spec:
         prometheus.io/port: "30000"
         prometheus.io/path: "/metrics"
     spec:
-      nodeSelector:
-        node.kubernetes.io/instance-type: ml.p5en.48xlarge
+      # Target a p5en.48xlarge on either cluster type. A plain EKS managed
+      # nodegroup labels instance-type with the bare EC2 type; a SageMaker
+      # HyperPod instance group uses the `ml.` prefix. A nodeSelector can't
+      # express OR, so match both with nodeAffinity In.
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: node.kubernetes.io/instance-type
+                operator: In
+                values:
+                - p5en.48xlarge      # plain EKS managed nodegroup
+                - ml.p5en.48xlarge   # SageMaker HyperPod instance group
       containers:
       - name: sglang
         image: <YOUR_ECR_IMAGE>   # the URI build-image.sh printed, e.g. <account>.dkr.ecr.<region>.amazonaws.com/sgl-dev-cu13:<tag>
-        imagePullPolicy: Always
+        imagePullPolicy: IfNotPresent
         securityContext:
           privileged: true
         env:
@@ -161,9 +173,16 @@ spec:
         emptyDir:
           medium: Memory
           sizeLimit: 64Gi
+      # ⚠️  SET THIS PER CLUSTER — the one thing scheduling can't auto-detect.
+      # The node's local NVMe is mounted at different paths on the two AMIs:
+      #   HyperPod-on-EKS (DLAMI):           /opt/dlami/nvme
+      #   self-managed EKS (RAID0 instance): /mnt/k8s-disks/0   (setup-local-disks raid0)
+      # type=Directory means the path must already exist (it holds the pre-staged
+      # model at <path>/moonshotai-Kimi-K2.5); a wrong path keeps the pod Pending
+      # with a FailedMount error rather than starting.
       - name: nvme-storage
         hostPath:
-          path: /opt/dlami/nvme
+          path: /opt/dlami/nvme  #For EKS: /mnt/k8s-disks/0
           type: Directory
       - name: gdrdrv
         hostPath:
@@ -196,9 +215,20 @@ spec:
         prometheus.io/port: "30000"
         prometheus.io/path: "/metrics"
     spec:
-      nodeSelector:
-        node.kubernetes.io/instance-type: ml.p5en.48xlarge
       affinity:
+        # Target a p5en.48xlarge on either cluster type. A plain EKS managed
+        # nodegroup labels instance-type with the bare EC2 type; a SageMaker
+        # HyperPod instance group uses the `ml.` prefix. A nodeSelector can't
+        # express OR, so match both with nodeAffinity In.
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: node.kubernetes.io/instance-type
+                operator: In
+                values:
+                - p5en.48xlarge      # plain EKS managed nodegroup
+                - ml.p5en.48xlarge   # SageMaker HyperPod instance group
         podAntiAffinity:
           requiredDuringSchedulingIgnoredDuringExecution:
           - labelSelector:
@@ -276,9 +306,16 @@ spec:
         emptyDir:
           medium: Memory
           sizeLimit: 64Gi
+      # ⚠️  SET THIS PER CLUSTER — the one thing scheduling can't auto-detect.
+      # The node's local NVMe is mounted at different paths on the two AMIs:
+      #   HyperPod-on-EKS (DLAMI):           /opt/dlami/nvme
+      #   self-managed EKS (RAID0 instance): /mnt/k8s-disks/0   (setup-local-disks raid0)
+      # type=Directory means the path must already exist (it holds the pre-staged
+      # model at <path>/moonshotai-Kimi-K2.5); a wrong path keeps the pod Pending
+      # with a FailedMount error rather than starting.
       - name: nvme-storage
         hostPath:
-          path: /opt/dlami/nvme
+          path: /opt/dlami/nvme  #For EKS: /mnt/k8s-disks/0
           type: Directory
       - name: gdrdrv
         hostPath:
