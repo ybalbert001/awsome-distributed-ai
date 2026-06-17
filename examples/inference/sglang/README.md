@@ -9,11 +9,11 @@ SPDX-License-Identifier: MIT-0
 SageMaker HyperPod. Each sub-directory is a self-contained sample — apply its
 manifest with `kubectl`.
 
-| Test case | Hardware | Topology |
-| --- | --- | --- |
-| [`qwen3.5-27b-b300-intra-pd`](./qwen3.5-27b-b300-intra-pd) | 1× B300 (8 GPU) | Intra-node PD — 6 prefill + 2 decode in one pod, NIXL, SGLang router sidecar |
-| [`kimi2.6-h200-1p1d`](./kimi2.6-h200-1p1d) | 2× H200 nodes | Node-level 1P1D — prefill + decode StatefulSets, NIXL over EFA |
-| [`dsv4pro-b300-single-node`](./dsv4pro-b300-single-node) | 1× B300 (8 GPU) | Unified (non-PD) baseline |
+| Test case | Hardware | Topology | Engine image |
+| --- | --- | --- | --- |
+| [`qwen3.5-27b-b300-intra-pd`](./qwen3.5-27b-b300-intra-pd) | 1× B300 (8 GPU) | Intra-node PD — 6 prefill + 2 decode in one pod, NIXL, SGLang router sidecar | `lmsysorg/sglang:v0.5.12.post1-cu130`, no inter-node RDMA support |
+| [`kimi2.6-h200-1p1d`](./kimi2.6-h200-1p1d) | 2× H200 nodes | Node-level 1P1D — prefill + decode StatefulSets, NIXL over EFA | Custom ECR build (lmsysorg/sglang:v0.5.12.post1-cu130 + EFA layer), inter-node RDMA enabled |
+| [`dsv4pro-b300-single-node`](./dsv4pro-b300-single-node) | 1× B300 (8 GPU) | Unified (non-PD) baseline | `lmsysorg/sglang:deepseek-v4-b300`, DeepSeek V4 dedicated image |
 
 ## Shared helpers
 
