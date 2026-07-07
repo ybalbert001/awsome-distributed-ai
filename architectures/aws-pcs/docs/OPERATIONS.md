@@ -466,6 +466,27 @@ cleanest mitigation is upstream — recording it here so users seeing it know th
 workaround and the next contributor doesn't waste time looking for a bug in this PR's
 scripts.
 
+### 6.2 `needrestart` restarting `slurmd` would stop running jobs — already handled
+
+When an unattended security upgrade updates a base library `slurmd` links (e.g. glibc),
+`needrestart` restarts `slurmd`, and that restart tears down the `slurmstepd` steps under
+it — **stopping every job on the node**. It is reproducible, not random, and not a reboot
+or a Slurm-package upgrade.
+
+The compute-node-group templates already guard against this: each `add-cng*` UserData
+writes a `needrestart` drop-in so `slurmd` is never auto-restarted (security updates still
+install; `needrestart` only defers the `slurmd` restart):
+
+```perl
+# /etc/needrestart/conf.d/90-pcs-slurm.conf  (written by add-cng* UserData)
+$nrconf{override_rc} = { qr(^slurmd) => 0 };
+```
+
+`slurmd` is the only Slurm systemd service on these nodes (the controller is managed by
+PCS); `qr(^slurmd)` also matches the versioned units (e.g. `slurmd-25.11`). The drop-in is
+a standalone `conf.d/*.conf` naming only `slurmd`, so if a later DLAMI or Slurm unit
+handles this differently it neither conflicts nor errors — at worst it becomes redundant.
+
 ## 7. Recommendations recap
 
 For a new production deploy:
