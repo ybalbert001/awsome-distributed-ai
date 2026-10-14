@@ -1,0 +1,171 @@
+# Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+# SPDX-License-Identifier: MIT-0
+#
+# KEDA autoscaling for the two engine Deployments, driven by Amazon Managed
+# Service for Prometheus (AMP). The collector from
+# observability/prometheus-grafana/eks-managed-observability writes the SGLang
+# metrics there; KEDA reads them back with SigV4. Prerequisite: an EKS Pod
+# Identity association for the keda/keda-operator service account with a role
+# that allows aps:QueryMetrics on the workspace.
+#
+# Each role scales on its own SLO plus a leading queue signal, and KEDA takes
+# the max over triggers:
+#   prefill  <- TTFT P90 (SLO)        + requests waiting for prefill
+#   decode   <- TPOT P90 (SLO)        + KV-cache usage
+# The queue / KV signals are what tell the two roles apart: TTFT also rises
+# when decode is out of KV (prefilled requests wait for decode pre-allocation),
+# and scaling prefill would not fix that.
+#
+# Queue triggers use KEDA's default AverageValue (desired =
+# ceil(total / threshold), i.e. the threshold is a per-replica queue depth).
+#
+# Thresholds below are set from the baseline in README.md.
+#
+# AMP_REGION and AMP_QUERY_URL are the only envsubst-rendered values (see README):
+#   envsubst '${AMP_REGION} ${AMP_QUERY_URL}' < autoscaling/scaledobjects.yaml | kubectl apply -n dsv4flash -f -
+---
+apiVersion: keda.sh/v1alpha1
+kind: TriggerAuthentication
+metadata:
+  name: keda-trigger-auth-aws-credentials
+spec:
+  podIdentity:
+    provider: aws
+---
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: dsv4flash-prefill
+spec:
+  scaleTargetRef:
+    name: dsv4flash-prefill
+  minReplicaCount: 1
+  # 2 on this two-node demo: each engine takes 2 GPUs + 2 EFA, and only one
+  # node is pre-staged with weights. Raise it with capacity.
+  maxReplicaCount: 2
+  # With minReplicaCount >= 1 the HPA does all the scaling (KEDA's
+  # pollingInterval / cooldownPeriod only apply to scale-to-zero), so the
+  # timing knobs are the HPA behavior below.
+  advanced:
+    horizontalPodAutoscalerConfig:
+      behavior:
+        # A new engine needs minutes to become Ready, so add one pod at a time
+        # and give it time to land before the HPA re-evaluates.
+        scaleUp:
+          stabilizationWindowSeconds: 0
+          policies:
+          - type: Pods
+            value: 1
+            periodSeconds: 120
+        scaleDown:
+          stabilizationWindowSeconds: 600
+          policies:
+          - type: Pods
+            value: 1
+            periodSeconds: 300
+  triggers:
+  # Backstop only: TTFT P90 over the last minute. Too noisy to lead (the
+  # 1P1D baseline shows intermittent 2-4 s P90 tails with an empty prefill
+  # queue), so the threshold is loose. Measured on the DECODE engines: in PD mode
+  # that is the only place a request's first token is timed end to end
+  # (decode receives the request alongside prefill, so the span covers
+  # prefill queue + prefill + KV transfer + first decode step). The router
+  # (sgl-model-gateway v0.3.2) defines smg_router_ttft_seconds but does not
+  # populate it for HTTP PD workers, and prefill engines export no TTFT.
+  - type: prometheus
+    name: ttft_p90
+    # Value, not the default AverageValue: a latency does not divide across
+    # replicas. HPA then computes desired = ceil(current * value / threshold).
+    metricType: Value
+    metadata:
+      # Amazon Managed Service for Prometheus, queried with SigV4 through the
+      # KEDA operator's EKS Pod Identity (see TriggerAuthentication above).
+      awsRegion: ${AMP_REGION}
+      serverAddress: ${AMP_QUERY_URL}
+      identityOwner: operator
+      query: |
+        histogram_quantile(0.9, sum by (le) (rate(sglang:time_to_first_token_seconds_bucket{namespace="dsv4flash",component="decode"}[1m])))
+      threshold: "3"
+      # No traffic -> no samples -> treat as 0 instead of an error.
+      ignoreNullValues: "true"
+    authenticationRef:
+      name: keda-trigger-auth-aws-credentials
+  # Primary signal: requests waiting for prefill, averaged over 1 minute
+  # (the raw gauge spikes whenever a burst lands). AverageValue, so desired =
+  # ceil(total / threshold). Baseline at 1P1D, 1024 in / 256 out: avg queue
+  # 0.5 at c=32, 14 at c=128, 40 at c=256, so 24 adds a replica only once
+  # the single prefill is clearly saturated.
+  - type: prometheus
+    name: prefill_queue
+    metadata:
+      # Amazon Managed Service for Prometheus, queried with SigV4 through the
+      # KEDA operator's EKS Pod Identity (see TriggerAuthentication above).
+      awsRegion: ${AMP_REGION}
+      serverAddress: ${AMP_QUERY_URL}
+      identityOwner: operator
+      query: |
+        avg_over_time(sum(sglang:num_queue_reqs{namespace="dsv4flash",component="prefill"})[1m:10s])
+      threshold: "24"
+      ignoreNullValues: "true"
+    authenticationRef:
+      name: keda-trigger-auth-aws-credentials
+---
+apiVersion: keda.sh/v1alpha1
+kind: ScaledObject
+metadata:
+  name: dsv4flash-decode
+spec:
+  scaleTargetRef:
+    name: dsv4flash-decode
+  minReplicaCount: 1
+  maxReplicaCount: 4
+  advanced:
+    horizontalPodAutoscalerConfig:
+      behavior:
+        scaleUp:
+          stabilizationWindowSeconds: 0
+          policies:
+          - type: Pods
+            value: 1
+            periodSeconds: 120
+        scaleDown:
+          stabilizationWindowSeconds: 600
+          policies:
+          - type: Pods
+            value: 1
+            periodSeconds: 300
+  triggers:
+  # TPOT P90 over the last minute, measured on the decode engines.
+  - type: prometheus
+    name: tpot_p90
+    # Value, not the default AverageValue: a latency does not divide across
+    # replicas. HPA then computes desired = ceil(current * value / threshold).
+    metricType: Value
+    metadata:
+      # Amazon Managed Service for Prometheus, queried with SigV4 through the
+      # KEDA operator's EKS Pod Identity (see TriggerAuthentication above).
+      awsRegion: ${AMP_REGION}
+      serverAddress: ${AMP_QUERY_URL}
+      identityOwner: operator
+      query: |
+        histogram_quantile(0.9, sum by (le) (rate(sglang:inter_token_latency_seconds_bucket{namespace="dsv4flash",component="decode"}[1m])))
+      threshold: "0.015"
+      ignoreNullValues: "true"
+    authenticationRef:
+      name: keda-trigger-auth-aws-credentials
+  # Requests prefilled but waiting for decode KV pre-allocation: the signal
+  # that decode, not prefill, is the bottleneck behind a TTFT rise.
+  - type: prometheus
+    name: decode_prealloc_queue
+    metadata:
+      # Amazon Managed Service for Prometheus, queried with SigV4 through the
+      # KEDA operator's EKS Pod Identity (see TriggerAuthentication above).
+      awsRegion: ${AMP_REGION}
+      serverAddress: ${AMP_QUERY_URL}
+      identityOwner: operator
+      query: |
+        sum(sglang:num_decode_prealloc_queue_reqs{namespace="dsv4flash",component="decode"})
+      threshold: "8"
+      ignoreNullValues: "true"
+    authenticationRef:
+      name: keda-trigger-auth-aws-credentials

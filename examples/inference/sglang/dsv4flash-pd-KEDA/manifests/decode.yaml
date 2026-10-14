@@ -1,0 +1,209 @@
+# Copyright Amazon.com, Inc. or its affiliates. All Rights Reserved.
+# SPDX-License-Identifier: MIT-0
+#
+# DeepSeek-V4-Flash PD on p6-b200.48xlarge (EKS) — DECODE engines.
+#
+# One decode engine per pod: tp=2 on 2 GPUs + 2 EFA interfaces, receiving KV
+# from prefill over NIXL/LIBFABRIC on EFA. Everything not commented here is
+# identical to prefill.yaml, which carries the full rationale.
+#
+# SGLANG_IMAGE and NVME_HOST_PATH are the only envsubst-rendered values:
+#   cat manifests/*.yaml | envsubst '${SGLANG_IMAGE} ${NVME_HOST_PATH}' | kubectl apply -n dsv4flash -f -
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dsv4flash-decode
+  labels:
+    app: dsv4flash
+    component: decode
+spec:
+  # KEDA owns replicas once autoscaling/scaledobjects.yaml is applied.
+  replicas: 1
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 0
+      maxUnavailable: 1
+  selector:
+    matchLabels:
+      app: dsv4flash
+      component: decode
+  template:
+    metadata:
+      labels:
+        app: dsv4flash
+        component: decode         # matched by the router's --decode-selector
+        sglang-metrics: "true"    # matched by the ADOT collector's sglang scrape job
+      annotations:
+        # No sglang.ai/bootstrap-port: the router only reads it on prefill pods.
+        # prometheus.io/*: same as prefill.yaml.
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "30000"
+        prometheus.io/path: "/metrics"
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: node.kubernetes.io/instance-type
+                operator: In
+                values:
+                - p6-b200.48xlarge
+      tolerations:
+      - key: nvidia.com/gpu
+        operator: Equal
+        value: "true"
+        effect: NoSchedule
+      # Scale-in drains in-flight requests in preStop (below) before SIGTERM.
+      # 600s covers a full decode of a long-output request at low TPOT.
+      terminationGracePeriodSeconds: 600
+      containers:
+      - name: sglang
+        image: ${SGLANG_IMAGE}
+        imagePullPolicy: IfNotPresent
+        terminationMessagePolicy: FallbackToLogsOnError
+        # IPC_LOCK lets libfabric pin memory for GPUDirect RDMA without a
+        # privileged container (which would expose every GPU on the node).
+        securityContext:
+          capabilities:
+            add: ["IPC_LOCK"]
+        env:
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        # The IP prefill advertises to decode for the KV bootstrap handshake.
+        - name: SGLANG_HOST_IP
+          valueFrom:
+            fieldRef:
+              fieldPath: status.podIP
+        # Weights are pre-staged on the node's NVMe; never reach out to HF at
+        # start-up (a scale-out must not depend on HF availability).
+        - name: HF_HUB_OFFLINE
+          value: "1"
+        # LIBFABRIC is the only NIXL backend that speaks EFA.
+        - name: SGLANG_DISAGGREGATION_NIXL_BACKEND
+          value: LIBFABRIC
+        - name: FI_PROVIDER
+          value: efa
+        - name: FI_EFA_USE_DEVICE_RDMA
+          value: "1"
+        # Each pod sees only its own 2 GPUs, so the SHM/CUDA-IPC shortcut
+        # cannot open a co-located peer's buffers: send everything through EFA.
+        - name: FI_EFA_ENABLE_SHM_TRANSFER
+          value: "0"
+        - name: FI_LOG_LEVEL
+          value: warn
+        - name: FI_LOG_PROV
+          value: efa
+        - name: NIXL_LOG_LEVEL
+          value: INFO
+        - name: NCCL_SOCKET_IFNAME
+          value: ^lo
+        # tp=2 with the FP4 MoE runner follows the SGLang DeepSeek-V4-Flash
+        # 2x B200 notebook (docs/demo/deepseek_v4_flash.ipynb in the image),
+        # minus EAGLE speculative decoding. tp=2 is not a cookbook-validated
+        # cell (that is tp=4); it is what lets four engines share one node.
+        command:
+        - sglang
+        - serve
+        - --trust-remote-code
+        - --model-path
+        - deepseek-ai/DeepSeek-V4-Flash
+        - --tp
+        - "2"
+        - --moe-runner-backend
+        - flashinfer_mxfp4
+        - --disable-flashinfer-autotune
+        - --swa-full-tokens-ratio
+        - "0.1"
+        - --mem-fraction-static
+        - "0.85"
+        - --disaggregation-mode
+        - decode
+        - --disaggregation-transfer-backend
+        - nixl
+        # Decode is where concurrency lives.
+        - --max-running-requests
+        - "256"
+        - --reasoning-parser
+        - deepseek-v4
+        - --enable-metrics
+        - --host
+        - "0.0.0.0"
+        - --port
+        - "30000"
+        ports:
+        - containerPort: 30000
+          name: http
+        lifecycle:
+          # Scale-in drain. Wait until this engine has nothing running,
+          # queued or waiting on a KV handoff, then let SIGTERM through. The
+          # router stops sending new work once the pod is terminating.
+          preStop:
+            exec:
+              command:
+              - /bin/sh
+              - -c
+              - |
+                for i in $(seq 1 116); do
+                  n=$(curl -sf -m 3 http://127.0.0.1:30000/metrics \
+                      | awk '/^sglang:(num_running_reqs|num_queue_reqs|num_decode_prealloc_queue_reqs|num_decode_transfer_queue_reqs)\{/ {s+=$2} END {print int(s)}')
+                  [ "${n:-0}" -eq 0 ] && exit 0
+                  sleep 5
+                done
+        volumeMounts:
+        - name: shm
+          mountPath: /dev/shm
+        - name: nvme-hf
+          mountPath: /root/.cache/huggingface
+        - name: nvme-tmp
+          mountPath: /tmp
+          subPathExpr: $(POD_NAME)
+        # A quarter of the node's CPU and memory minus headroom, so four engine
+        # pods fit on one node.
+        resources:
+          requests:
+            cpu: "32"
+            memory: 256Gi
+          limits:
+            nvidia.com/gpu: 2
+            vpc.amazonaws.com/efa: 2
+        # Startup probe covers the cold start (weight load + JIT + CUDA graphs);
+        # liveness and readiness only take over once it has passed.
+        startupProbe:
+          httpGet:
+            path: /health
+            port: 30000
+          periodSeconds: 10
+          failureThreshold: 180
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 30000
+          periodSeconds: 60
+          timeoutSeconds: 5
+          failureThreshold: 5
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 30000
+          periodSeconds: 5
+          timeoutSeconds: 5
+      volumes:
+      - name: shm
+        emptyDir:
+          medium: Memory
+          sizeLimit: 64Gi
+      # Pre-staged by ../download-model-daemonset.yaml (see README). Directory,
+      # not DirectoryOrCreate, so a missing pre-stage fails loudly.
+      - name: nvme-hf
+        hostPath:
+          path: ${NVME_HOST_PATH}/huggingface
+          type: Directory
+      - name: nvme-tmp
+        hostPath:
+          path: ${NVME_HOST_PATH}/tmp
+          type: DirectoryOrCreate
